@@ -38,11 +38,12 @@
   "isc_dependency_pct": 33.76,
   "transfer_dependency_pct": 45.53,
   "osr_pct": 54.57,
-  "adjusted_surplus": -22039816,
-  "health_score": 80,
+  "adjusted_surplus": 245960184,
+  "adjusted_ebitda": 252029345,
+  "adjusted_dscr": 16.56,
+  "health_score": 95,
   "warnings": [
     "One-time items ($134,000,000) represent 104.5% of revenue \u2014 surplus may not reflect ongoing operations",
-    "Excluding one-time items, underlying operations show a deficit of $22,039,816",
     "Qualified audit opinion issued \u2014 financial statements may not fully reflect true position"
   ]
 }
