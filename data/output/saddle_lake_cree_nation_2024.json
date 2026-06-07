@@ -35,7 +35,7 @@
   "isc_dependency_pct": 75.91,
   "transfer_dependency_pct": 84.02,
   "osr_pct": 7.67,
-  "health_score": 50,
+  "health_score": 41,
   "warnings": [
     "Qualified audit opinion issued \u2014 financial statements may not fully reflect true position",
     "High ISC dependency (75.91%) \u2014 operations heavily reliant on federal transfers"

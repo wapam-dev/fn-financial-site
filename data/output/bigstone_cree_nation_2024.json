@@ -35,7 +35,7 @@
   "isc_dependency_pct": 78.87,
   "transfer_dependency_pct": 79.97,
   "osr_pct": 7.41,
-  "health_score": 95,
+  "health_score": 85,
   "warnings": [
     "High ISC dependency (78.87%) \u2014 operations heavily reliant on federal transfers"
   ]
