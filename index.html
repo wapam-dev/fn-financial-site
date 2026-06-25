@@ -3,137 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>First Nations Financial Health</title>
+    <title>First Nations Financial Health — wapam</title>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: Arial, sans-serif;
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
-            background: #f9f9f9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
             color: #222;
         }
-        h1 {
-            font-size: 1.8rem;
-            border-bottom: 3px solid #2c6e49;
-            padding-bottom: 10px;
-            color: #2c6e49;
+        header {
+            background: #2c6e49;
+            color: white;
+            padding: 20px 30px;
         }
-        p.subtitle {
-            color: #555;
-            margin-top: -10px;
-            margin-bottom: 30px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        header h1 { font-size: 1.6rem; font-weight: 700; }
+        header p { font-size: 0.9rem; opacity: 0.85; margin-top: 4px; }
+        .container { max-width: 1300px; margin: 0 auto; padding: 20px; }
+
+        /* Filters */
+        .filters {
             background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 30px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
+        .filters input, .filters select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+        }
+        .filters input { width: 220px; }
+        .stat-bar {
+            margin-left: auto;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Table */
+        .table-wrap {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        table { width: 100%; border-collapse: collapse; }
         th {
             background: #2c6e49;
             color: white;
-            padding: 12px 16px;
+            padding: 11px 14px;
             text-align: left;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
         }
+        th:hover { background: #245c3d; }
+        th.sorted-asc::after { content: " ▲"; }
+        th.sorted-desc::after { content: " ▼"; }
         td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #eee;
-            font-size: 0.95rem;
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.88rem;
         }
         tr:last-child td { border-bottom: none; }
-        tr.clickable:hover td {
-            background: #f0f7f4;
-            cursor: pointer;
-        }
+        tr.clickable:hover td { background: #f0f7f4; cursor: pointer; }
         tr.selected td { background: #e0f0e8; }
-        .score { font-weight: bold; font-size: 1.1rem; }
+
+        .score { font-weight: 700; font-size: 1rem; }
         .score-high { color: #2c6e49; }
         .score-mid { color: #e07b00; }
         .score-low { color: #cc2936; }
-        .tag {
+
+        .badge {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            margin-left: 6px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            margin-left: 4px;
         }
-        .tag-warning { background: #fff0f0; color: #cc2936; border: 1px solid #cc2936; }
-        .tag-ok { background: #f0f7f4; color: #2c6e49; border: 1px solid #2c6e49; }
+        .badge-warn { background: #fff0f0; color: #cc2936; border: 1px solid #cc2936; }
+        .badge-ok { background: #f0f7f4; color: #2c6e49; border: 1px solid #2c6e49; }
 
         /* Detail panel */
-        #detail-panel {
+        #detail {
             display: none;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            padding: 28px;
-            margin-bottom: 30px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            padding: 24px;
+            margin-bottom: 20px;
         }
-        #detail-panel h2 {
-            color: #2c6e49;
-            margin-top: 0;
-            font-size: 1.4rem;
-        }
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 16px;
-            margin: 20px 0;
-        }
-        .metric-card {
-            background: #f9f9f9;
-            border-radius: 8px;
-            padding: 14px;
-            border-left: 4px solid #2c6e49;
-        }
-        .metric-card.warning { border-left-color: #e07b00; }
-        .metric-card.danger { border-left-color: #cc2936; }
-        .metric-label {
-            font-size: 0.75rem;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-        .metric-value {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #222;
-        }
-        .warning-box {
-            background: #fff8f0;
-            border: 1px solid #e07b00;
-            border-radius: 6px;
-            padding: 12px 16px;
-            margin-top: 16px;
-        }
-        .warning-box h4 {
-            margin: 0 0 8px 0;
-            color: #e07b00;
-            font-size: 0.9rem;
-        }
-        .warning-box ul {
-            margin: 0;
-            padding-left: 18px;
-            font-size: 0.85rem;
-            color: #555;
-        }
-        .warning-box ul li { margin-bottom: 4px; }
-        .notes-box {
-            background: #f0f7f4;
-            border-radius: 6px;
-            padding: 12px 16px;
-            margin-top: 12px;
-            font-size: 0.85rem;
-            color: #444;
-        }
+        #detail h2 { color: #2c6e49; font-size: 1.3rem; margin-bottom: 4px; }
+        #detail .meta { color: #888; font-size: 0.83rem; margin-bottom: 16px; }
         .close-btn {
             float: right;
             background: none;
@@ -141,2521 +112,340 @@
             border-radius: 4px;
             padding: 4px 10px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: #666;
         }
         .close-btn:hover { background: #eee; }
-        .section-title {
-            font-size: 0.85rem;
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .card {
+            background: #f9f9f9;
+            border-radius: 6px;
+            padding: 12px;
+            border-left: 4px solid #2c6e49;
+        }
+        .card.warn { border-left-color: #e07b00; }
+        .card.danger { border-left-color: #cc2936; }
+        .card-label {
+            font-size: 0.72rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 3px;
+        }
+        .card-value { font-size: 1.2rem; font-weight: 700; }
+
+        .section { 
+            font-size: 0.78rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #888;
-            margin: 20px 0 10px 0;
+            margin: 18px 0 8px;
             border-bottom: 1px solid #eee;
             padding-bottom: 4px;
         }
+        .warn-box {
+            background: #fff8f0;
+            border: 1px solid #e07b00;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-top: 12px;
+            font-size: 0.83rem;
+            color: #555;
+        }
+        .warn-box strong { color: #e07b00; display: block; margin-bottom: 4px; }
+        .notes-box {
+            background: #f0f7f4;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: 0.83rem;
+            color: #444;
+        }
+        .rev-lines {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2px 16px;
+            font-size: 0.82rem;
+            margin-top: 6px;
+        }
+        .rev-lines span:nth-child(odd) { color: #444; }
+        .rev-lines span:nth-child(even) { text-align: right; font-weight: 600; color: #222; }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            font-size: 0.88rem;
+        }
+        .pagination button {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            background: white;
+        }
+        .pagination button:hover { background: #f0f7f4; }
+        .pagination button.active { background: #2c6e49; color: white; border-color: #2c6e49; }
+        .pagination button:disabled { opacity: 0.4; cursor: default; }
+
         footer {
-            margin-top: 40px;
-            font-size: 0.8rem;
-            color: #aaa;
             text-align: center;
+            padding: 30px 20px;
+            font-size: 0.78rem;
+            color: #aaa;
         }
     </style>
 </head>
 <body>
 
-<h1>First Nations Financial Health</h1>
-<p class="subtitle">Data extracted from FNFTA disclosures. Fiscal year ending March 31, 2024. Click a nation for details.</p>
+<header>
+    <h1>wapam — First Nations Financial Health</h1>
+    <p>Data extracted from publicly available FNFTA disclosures. Click any nation to explore details.</p>
+</header>
 
-<table>
-    <thead>
-        <tr>
-            <th>Nation</th>
-            <th>Health Score</th>
-            <th>ISC Dependency</th>
-            <th>OSR</th>
-            <th>Revenue</th>
-            <th>Flags</th>
-        </tr>
-    </thead>
-    <tbody id="table-body">
-        <tr><td colspan="6">Loading...</td></tr>
-    </tbody>
-</table>
+<div class="container">
+    <div class="filters">
+        <input type="text" id="search" placeholder="Search nation...">
+        <select id="filter-year">
+            <option value="">All Years</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+            <option value="2020">2020</option>
+        </select>
+        <select id="filter-province">
+            <option value="">All Provinces</option>
+            <option value="AB">Alberta</option>
+            <option value="BC">British Columbia</option>
+            <option value="MB">Manitoba</option>
+            <option value="ON">Ontario</option>
+            <option value="SK">Saskatchewan</option>
+            <option value="QC">Quebec</option>
+            <option value="NS">Nova Scotia</option>
+            <option value="NB">New Brunswick</option>
+            <option value="PEI">PEI</option>
+            <option value="NL">Newfoundland</option>
+            <option value="NT">Northwest Territories</option>
+            <option value="YT">Yukon</option>
+            <option value="NU">Nunavut</option>
+        </select>
+        <select id="filter-score">
+            <option value="">All Scores</option>
+            <option value="80">Strong (80+)</option>
+            <option value="60">Moderate (60-79)</option>
+            <option value="0">Needs Attention (0-59)</option>
+        </select>
+        <select id="filter-flags">
+            <option value="">All Nations</option>
+            <option value="going_concern">Going Concern</option>
+            <option value="audit_qualified">Qualified Audit</option>
+        </select>
+        <div class="stat-bar" id="stat-bar">Loading...</div>
+    </div>
 
-<div id="detail-panel"></div>
+    <div id="detail"></div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="sortBy('nation')">Nation</th>
+                    <th onclick="sortBy('fiscal_year')">Year</th>
+                    <th onclick="sortBy('province')">Prov</th>
+                    <th onclick="sortBy('health_score')">Score</th>
+                    <th onclick="sortBy('isc_dependency_pct')">ISC%</th>
+                    <th onclick="sortBy('osr_pct')">OSR%</th>
+                    <th onclick="sortBy('revenue')">Revenue</th>
+                    <th onclick="sortBy('annual_surplus')">Surplus</th>
+                    <th>Flags</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>
 
 <footer>
-    Data sourced from publicly available FNFTA disclosures. Analysis methodology available on GitHub.
+    Data sourced from publicly available FNFTA disclosures · Analysis for community benefit · <a href="https://github.com/wapam-dev" style="color:#2c6e49">wapam-dev</a>
 </footer>
 
 <script>
-                        const nations = [
-        'data/output/_.json',
-        'data/output/_2021.json',
-        'data/output/aamjiwnaang_first_nation_2020.json',
-        'data/output/aamjiwnaang_first_nation_2021.json',
-        'data/output/aamjiwnaang_first_nation_2022.json',
-        'data/output/aamjiwnaang_first_nation_2023.json',
-        'data/output/aamjiwnaang_first_nation_2024.json',
-        'data/output/abegweit_first_nation_2020.json',
-        'data/output/abegweit_first_nation_2021.json',
-        'data/output/abegweit_first_nation_2022.json',
-        'data/output/abegweit_first_nation_2023.json',
-        'data/output/abegweit_first_nation_2024.json',
-        'data/output/acadia_first_nation_2020.json',
-        'data/output/acadia_first_nation_2021.json',
-        'data/output/acadia_first_nation_2022.json',
-        'data/output/acadia_first_nation_2023.json',
-        'data/output/acho_dene_koe_first_nation_2020.json',
-        'data/output/acho_dene_koe_first_nation_2021.json',
-        'data/output/acho_dene_koe_first_nation_2023.json',
-        'data/output/adams_lake_indian_band_2020.json',
-        'data/output/adams_lake_indian_band_2021.json',
-        'data/output/adams_lake_indian_band_2022.json',
-        'data/output/adams_lake_indian_band_2023.json',
-        'data/output/adams_lake_indian_band_2024.json',
-        'data/output/ahousaht_2020.json',
-        'data/output/ahousaht_2021.json',
-        'data/output/ahousaht_2022.json',
-        'data/output/ahousaht_2023.json',
-        'data/output/ahousaht_2024.json',
-        'data/output/ahtahkakoop_cree_nation_2021.json',
-        'data/output/ahtahkakoop_cree_nation_2022.json',
-        'data/output/ahtahkakoop_cree_nation_2023.json',
-        'data/output/ahtahkakoop_cree_nation_2024.json',
-        'data/output/aitchelitz_first_nation_2020.json',
-        'data/output/aitchelitz_first_nation_2021.json',
-        'data/output/aitchelitz_first_nation_2022.json',
-        'data/output/aitchelitz_first_nation_2023.json',
-        'data/output/aitchelitz_first_nation_2024.json',
-        'data/output/akisq'nuk_first_nation_2021.json',
-        'data/output/akisq'nuk_first_nation_2022.json',
-        'data/output/akisq'nuk_first_nation_2023.json',
-        'data/output/akisq'nuk_first_nation_2024.json',
-        'data/output/akisqnuk_first_nation_2021.json',
-        'data/output/akisqnuk_first_nation_2022.json',
-        'data/output/akisqnuk_first_nation_2023.json',
-        'data/output/akisqnuk_first_nation_2024.json',
-        'data/output/aklavik_indian_band_2023.json',
-        'data/output/aklavik_indian_band_2024.json',
-        'data/output/alderville_first_nation_2020.json',
-        'data/output/alderville_first_nation_2021.json',
-        'data/output/alderville_first_nation_2023.json',
-        'data/output/alderville_first_nation_2024.json',
-        'data/output/alexander_first_nation_2020.json',
-        'data/output/alexander_first_nation_2021.json',
-        'data/output/alexander_first_nation_2022.json',
-        'data/output/alexander_first_nation_2023.json',
-        'data/output/alexander_first_nation_2024.json',
-        'data/output/alexis_nakota_sioux_nation_2020.json',
-        'data/output/alexis_nakota_sioux_nation_2021.json',
-        'data/output/alexis_nakota_sioux_nation_2022.json',
-        'data/output/alexis_nakota_sioux_nation_2023.json',
-        'data/output/alexis_nakota_sioux_nation_2024.json',
-        'data/output/algonquins_of_barriere_lake_2023.json',
-        'data/output/algonquins_of_barriere_lake_2024.json',
-        'data/output/algonquins_of_barrière_lake_2020.json',
-        'data/output/algonquins_of_pikwakanagan_2020.json',
-        'data/output/algonquins_of_pikwakanagan_2021.json',
-        'data/output/algonquins_of_pikwakanagan_2023.json',
-        'data/output/algonquins_of_pikwakanagan_first_nation_2022.json',
-        'data/output/animakee_wa_zhing_#37_2020.json',
-        'data/output/animakee_wa_zhing_#37_2021.json',
-        'data/output/animakee_wa_zhing_#37_2022.json',
-        'data/output/animakee_wa_zhing_#37_2023.json',
-        'data/output/animbiigoo_zaagi'igan_anishinaabek_2020.json',
-        'data/output/animbiigoo_zaagi'igan_anishinaabek_2021.json',
-        'data/output/animbiigoo_zaagi'igan_anishinaabek_2022.json',
-        'data/output/animbiigoo_zaagi'igan_anishinaabek_2023.json',
-        'data/output/animbiigoo_zaagiigan_anishinaabek_2020.json',
-        'data/output/animbiigoo_zaagiigan_anishinaabek_2021.json',
-        'data/output/animbiigoo_zaagiigan_anishinaabek_2022.json',
-        'data/output/animbiigoo_zaagiigan_anishinaabek_2023.json',
-        'data/output/anishinaabeg_of_naongashiing_first_nation_2021.json',
-        'data/output/anishinaabeg_of_naongashiing_first_nation_2022.json',
-        'data/output/anishinaabeg_of_naongashiing_first_nation_2023.json',
-        'data/output/anishinaabeg_of_naongashiing_first_nation_2024.json',
-        'data/output/anishinabe_of_wauzhushk_onigum_nation_2020.json',
-        'data/output/anishinabe_of_wauzhushk_onigum_nation_2021.json',
-        'data/output/anishinabe_of_wauzhushk_onigum_nation_2022.json',
-        'data/output/anishinabe_of_wauzhushk_onigum_nation_2023.json',
-        'data/output/anishinabe_of_wauzhushk_onigum_nation_2024.json',
-        'data/output/annapolis_valley_first_nation_2020.json',
-        'data/output/annapolis_valley_first_nation_2021.json',
-        'data/output/annapolis_valley_first_nation_2022.json',
-        'data/output/annapolis_valley_first_nation_2023.json',
-        'data/output/annapolis_valley_first_nation_2024.json',
-        'data/output/apitipi_anicinapek_nation_-_apitipi_reserve_#70_2022.json',
-        'data/output/apitipi_anicinapek_nation_-_apitipi_reserve_#70_2023.json',
-        'data/output/aqam_2020.json',
-        'data/output/aqam_2021.json',
-        'data/output/aqam_2022.json',
-        'data/output/aqam_2023.json',
-        'data/output/aqam_2024.json',
-        'data/output/aroland_first_nation_2020.json',
-        'data/output/aroland_first_nation_2021.json',
-        'data/output/aroland_first_nation_2022.json',
-        'data/output/aroland_first_nation_2023.json',
-        'data/output/aroland_first_nation_2024.json',
-        'data/output/ashcroft_indian_band_2020.json',
-        'data/output/ashcroft_indian_band_2021.json',
-        'data/output/ashcroft_indian_band_2022.json',
-        'data/output/ashcroft_indian_band_2023.json',
-        'data/output/ashcroft_indian_band_2024.json',
-        'data/output/athabasca_chipewyan_first_nation_2020.json',
-        'data/output/athabasca_chipewyan_first_nation_2021.json',
-        'data/output/athabasca_chipewyan_first_nation_2022.json',
-        'data/output/athabasca_chipewyan_first_nation_2023.json',
-        'data/output/athabasca_chipewyan_first_nation_2024.json',
-        'data/output/atikameksheng_anishnawbek_2020.json',
-        'data/output/atikameksheng_anishnawbek_2021.json',
-        'data/output/atikameksheng_anishnawbek_2023.json',
-        'data/output/atikameksheng_anishnawbek_2024.json',
-        'data/output/attawapiskat_first_nation_2020.json',
-        'data/output/attawapiskat_first_nation_2021.json',
-        'data/output/attawapiskat_first_nation_2022.json',
-        'data/output/attawapiskat_first_nation_2023.json',
-        'data/output/attawapiskat_first_nation_2024.json',
-        'data/output/aundeck-omni-kaning_2024.json',
-        'data/output/aundeck-omni-kaning_first_nation_2020.json',
-        'data/output/aundeck-omni-kaning_first_nation_2022.json',
-        'data/output/aundeck-omni-kaning_first_nation_2024.json',
-        'data/output/batchewana_first_nation_2020.json',
-        'data/output/batchewana_first_nation_2021.json',
-        'data/output/batchewana_first_nation_2022.json',
-        'data/output/batchewana_first_nation_2023.json',
-        'data/output/batchewana_first_nation_of_ojibways_2024.json',
-        'data/output/bear_river_first_nation_2020.json',
-        'data/output/bear_river_first_nation_2021.json',
-        'data/output/bear_river_first_nation_2022.json',
-        'data/output/bear_river_first_nation_2023.json',
-        'data/output/bear_river_first_nation_2024.json',
-        'data/output/beardy's_and_okemasis_cree_nation_2020.json',
-        'data/output/beardy's_and_okemasis_cree_nation_2021.json',
-        'data/output/beardy's_and_okemasis_cree_nation_2022.json',
-        'data/output/beardy's_and_okemasis_cree_nation_2023.json',
-        'data/output/beardy's_and_okemasis_cree_nation_2024.json',
-        'data/output/beardys_and_okemasis_cree_nation_2020.json',
-        'data/output/beardys_and_okemasis_cree_nation_2021.json',
-        'data/output/beardys_and_okemasis_cree_nation_2022.json',
-        'data/output/beardys_and_okemasis_cree_nation_2023.json',
-        'data/output/beardys_and_okemasis_cree_nation_2024.json',
-        'data/output/beausoleil_first_nation_2020.json',
-        'data/output/beausoleil_first_nation_2021.json',
-        'data/output/beausoleil_first_nation_2022.json',
-        'data/output/beausoleil_first_nation_2023.json',
-        'data/output/beausoleil_first_nation_2024.json',
-        'data/output/beaver_lake_cree_nation_2020.json',
-        'data/output/beaver_lake_cree_nation_2021.json',
-        'data/output/beaver_lake_cree_nation_2022.json',
-        'data/output/beaver_lake_cree_nation_2023.json',
-        'data/output/beaver_lake_cree_nation_2024.json',
-        'data/output/beecher_bay_first_nation_2020.json',
-        'data/output/beecher_bay_first_nation_2022.json',
-        'data/output/beecher_bay_first_nation_2023.json',
-        'data/output/beecher_bay_first_nation_2024.json',
-        'data/output/behdzi_ahda'_first_nation_band_2020.json',
-        'data/output/behdzi_ahda'_first_nation_band_2021.json',
-        'data/output/behdzi_ahda'_first_nation_band_2023.json',
-        'data/output/behdzi_ahda_first_nation_band_2020.json',
-        'data/output/behdzi_ahda_first_nation_band_2021.json',
-        'data/output/behdzi_ahda_first_nation_band_2023.json',
-        'data/output/behdzi_ahda_first_nation_band_2024.json',
-        'data/output/berens_river_first_nation_2020.json',
-        'data/output/berens_river_first_nation_2021.json',
-        'data/output/berens_river_first_nation_2022.json',
-        'data/output/berens_river_first_nation_2024.json',
-        'data/output/big_grassy_river_first_nation_2021.json',
-        'data/output/big_grassy_river_first_nation_2022.json',
-        'data/output/big_grassy_river_first_nation_2023.json',
-        'data/output/big_grassy_river_first_nation_2024.json',
-        'data/output/big_island_lake_cree_nation_2021.json',
-        'data/output/bigstone_cree_nation_2020.json',
-        'data/output/bigstone_cree_nation_2021.json',
-        'data/output/bigstone_cree_nation_2022.json',
-        'data/output/bigstone_cree_nation_2024.json',
-        'data/output/biigtigong_nishnaabeg_2020.json',
-        'data/output/biigtigong_nishnaabeg_2021.json',
-        'data/output/biigtigong_nishnaabeg_2022.json',
-        'data/output/biigtigong_nishnaabeg_2023.json',
-        'data/output/biigtigong_nishnaabeg_2024.json',
-        'data/output/biinjitiwaabik_zaaging_anishinaabek_2020.json',
-        'data/output/biinjitiwaabik_zaaging_anishinaabek_2021.json',
-        'data/output/binche_whut'en_2020.json',
-        'data/output/binche_whut'en_2021.json',
-        'data/output/binche_whut'en_2023.json',
-        'data/output/binche_whut'en_2024.json',
-        'data/output/binche_whuten_2020.json',
-        'data/output/binche_whuten_2021.json',
-        'data/output/binche_whuten_2023.json',
-        'data/output/binche_whuten_2024.json',
-        'data/output/bingwi_neyaashi_anishinaabek_2020.json',
-        'data/output/bingwi_neyaashi_anishinaabek_2021.json',
-        'data/output/bingwi_neyaashi_anishinaabek_2022.json',
-        'data/output/bingwi_neyaashi_anishinaabek_2023.json',
-        'data/output/bingwi_neyaashi_anishinaabek_2024.json',
-        'data/output/birch_narrows_dene_nation_2020.json',
-        'data/output/birch_narrows_dene_nation_2021.json',
-        'data/output/birch_narrows_dene_nation_2022.json',
-        'data/output/birch_narrows_dene_nation_2023.json',
-        'data/output/birch_narrows_dene_nation_2024.json',
-        'data/output/birdtail_sioux_first_nation_2020.json',
-        'data/output/birdtail_sioux_first_nation_2021.json',
-        'data/output/birdtail_sioux_first_nation_2022.json',
-        'data/output/birdtail_sioux_first_nation_2023.json',
-        'data/output/birdtail_sioux_first_nation_2024.json',
-        'data/output/black_lake_denesuline_nation_2020.json',
-        'data/output/black_lake_denesuline_nation_2021.json',
-        'data/output/black_lake_denesuline_nation_2022.json',
-        'data/output/black_lake_denesuline_nation_2023.json',
-        'data/output/black_lake_denesuline_nation_2024.json',
-        'data/output/black_river_first_nation_2020.json',
-        'data/output/black_river_first_nation_2021.json',
-        'data/output/black_river_first_nation_2022.json',
-        'data/output/black_river_first_nation_2023.json',
-        'data/output/blood_tribe_2020.json',
-        'data/output/blood_tribe_2021.json',
-        'data/output/blood_tribe_2022.json',
-        'data/output/blood_tribe_2024.json',
-        'data/output/blood_tribe_economic_development_2023.json',
-        'data/output/bloodvein_first_nation_2020.json',
-        'data/output/bloodvein_first_nation_2021.json',
-        'data/output/bloodvein_first_nation_2022.json',
-        'data/output/bloodvein_first_nation_2023.json',
-        'data/output/bloodvein_first_nation_2024.json',
-        'data/output/blueberry_river_first_nation_2021.json',
-        'data/output/blueberry_river_first_nation_2022.json',
-        'data/output/blueberry_river_first_nation_2023.json',
-        'data/output/blueberry_river_first_nations_2020.json',
-        'data/output/blueberry_river_first_nations_2024.json',
-        'data/output/bonaparte_first_nation_2021.json',
-        'data/output/bonaparte_first_nation_2022.json',
-        'data/output/bonaparte_first_nation_2023.json',
-        'data/output/bonaparte_first_nation_2024.json',
-        'data/output/bonaparte_indian_band_2020.json',
-        'data/output/boothroyd_indian_band_2020.json',
-        'data/output/boothroyd_indian_band_2021.json',
-        'data/output/boothroyd_indian_band_2022.json',
-        'data/output/boothroyd_indian_band_2023.json',
-        'data/output/boothroyd_indian_band_2024.json',
-        'data/output/boston_bar_first_nation_2020.json',
-        'data/output/boston_bar_first_nation_2021.json',
-        'data/output/boston_bar_first_nation_2022.json',
-        'data/output/boston_bar_first_nation_2023.json',
-        'data/output/bridge_river_indian_band_2020.json',
-        'data/output/bridge_river_indian_band_2021.json',
-        'data/output/bridge_river_indian_band_2022.json',
-        'data/output/bridge_river_indian_band_2023.json',
-        'data/output/bridge_river_indian_band_2024.json',
-        'data/output/brokenhead_ojibway_nation_2020.json',
-        'data/output/brokenhead_ojibway_nation_2021.json',
-        'data/output/brokenhead_ojibway_nation_2022.json',
-        'data/output/brokenhead_ojibway_nation_2023.json',
-        'data/output/brokenhead_ojibway_nation_2024.json',
-        'data/output/brunswick_house_first_nation_2020.json',
-        'data/output/brunswick_house_first_nation_2021.json',
-        'data/output/brunswick_house_first_nation_2022.json',
-        'data/output/buctouche_first_nation_2020.json',
-        'data/output/buctouche_first_nation_2021.json',
-        'data/output/buctouche_first_nation_2022.json',
-        'data/output/buffalo_point_first_nation_2020.json',
-        'data/output/buffalo_point_first_nation_2021.json',
-        'data/output/buffalo_point_first_nation_2022.json',
-        'data/output/buffalo_point_first_nation_2023.json',
-        'data/output/buffalo_point_first_nation_2024.json',
-        'data/output/buffalo_river_dene_nation_2020.json',
-        'data/output/buffalo_river_dene_nation_2021.json',
-        'data/output/buffalo_river_dene_nation_2022.json',
-        'data/output/buffalo_river_dene_nation_2023.json',
-        'data/output/buffalo_river_dene_nation_2024.json',
-        'data/output/bunibonibee_cree_nation_2020.json',
-        'data/output/bunibonibee_cree_nation_2021.json',
-        'data/output/bunibonibee_cree_nation_2022.json',
-        'data/output/burns_lake_band_2020.json',
-        'data/output/burns_lake_band_2021.json',
-        'data/output/burns_lake_band_2022.json',
-        'data/output/caldwell_first_nation_2020.json',
-        'data/output/caldwell_first_nation_2021.json',
-        'data/output/caldwell_first_nation_2022.json',
-        'data/output/caldwell_first_nation_2023.json',
-        'data/output/caldwell_first_nation_2024.json',
-        'data/output/campbell_river_indian_band_2020.json',
-        'data/output/campbell_river_indian_band_2021.json',
-        'data/output/campbell_river_indian_band_2022.json',
-        'data/output/campbell_river_indian_band_2023.json',
-        'data/output/canim_lake_band_2020.json',
-        'data/output/canim_lake_band_2021.json',
-        'data/output/canim_lake_band_2023.json',
-        'data/output/canoe_lake_cree_first_nation_2020.json',
-        'data/output/canoe_lake_cree_first_nation_2021.json',
-        'data/output/canoe_lake_cree_first_nation_2022.json',
-        'data/output/canoe_lake_cree_first_nation_2023.json',
-        'data/output/canupawakpa_dakota_nation_2020.json',
-        'data/output/canupawakpa_dakota_nation_2021.json',
-        'data/output/canupawakpa_dakota_nation_2022.json',
-        'data/output/canupawakpa_dakota_nation_2023.json',
-        'data/output/carry_the_kettle_nakoda_nation_2020.json',
-        'data/output/carry_the_kettle_nakoda_nation_2021.json',
-        'data/output/carry_the_kettle_nakoda_nation_2023.json',
-        'data/output/carry_the_kettle_nakoda_nation_2024.json',
-        'data/output/carry_the_kettle_nakota_nation_2022.json',
-        'data/output/cat_lake_first_nation_2020.json',
-        'data/output/cat_lake_first_nation_2021.json',
-        'data/output/cat_lake_first_nation_2022.json',
-        'data/output/cayoose_creek_indian_band_2020.json',
-        'data/output/cayoose_creek_indian_band_2021.json',
-        'data/output/cayoose_creek_indian_band_2022.json',
-        'data/output/cayoose_creek_indian_band_2023.json',
-        'data/output/chapleau_cree_first_nation_2020.json',
-        'data/output/chapleau_cree_first_nation_2021.json',
-        'data/output/chapleau_cree_first_nation_2022.json',
-        'data/output/chapleau_cree_first_nation_2023.json',
-        'data/output/chapleau_cree_first_nation_2024.json',
-        'data/output/chapleau_ojibwe_first_nation_2020.json',
-        'data/output/chapleau_ojibwe_first_nation_2021.json',
-        'data/output/chapleau_ojibwe_first_nation_2022.json',
-        'data/output/chapleau_ojibwe_first_nation_2023.json',
-        'data/output/chapleau_ojibwe_first_nation_2024.json',
-        'data/output/chawathil_first_nation_2020.json',
-        'data/output/chawathil_first_nation_2021.json',
-        'data/output/chawathil_first_nation_2022.json',
-        'data/output/chawathil_first_nation_2023.json',
-        'data/output/cheam_first_nation_2020.json',
-        'data/output/cheam_first_nation_2021.json',
-        'data/output/cheam_first_nation_2022.json',
-        'data/output/cheam_first_nation_2023.json',
-        'data/output/cheam_first_nation_2024.json',
-        'data/output/chemawawin_cree_nation_2020.json',
-        'data/output/chemawawin_cree_nation_2021.json',
-        'data/output/chemawawin_cree_nation_2022.json',
-        'data/output/chemawawin_cree_nation_2023.json',
-        'data/output/cheslatta_carrier_nation_2020.json',
-        'data/output/cheslatta_carrier_nation_2021.json',
-        'data/output/chipewyan_prairie_first_nation_2020.json',
-        'data/output/chipewyan_prairie_first_nation_2021.json',
-        'data/output/chipewyan_prairie_first_nation_2023.json',
-        'data/output/chippewas_of_georgina_island_first_nation_2021.json',
-        'data/output/chippewas_of_georgina_island_first_nation_2022.json',
-        'data/output/chippewas_of_georgina_island_first_nation_2023.json',
-        'data/output/chippewas_of_georgina_island_first_nation_2024.json',
-        'data/output/chippewas_of_kettle_and_stony_point_first_nation_2021.json',
-        'data/output/chippewas_of_kettle_and_stony_point_first_nation_2022.json',
-        'data/output/chippewas_of_kettle_and_stony_point_first_nation_2023.json',
-        'data/output/chippewas_of_kettle_and_stony_point_first_nation_2024.json',
-        'data/output/chippewas_of_nawash_unceded_first_nation_2021.json',
-        'data/output/chippewas_of_nawash_unceded_first_nation_2022.json',
-        'data/output/chippewas_of_rama_first_nation_2021.json',
-        'data/output/chippewas_of_rama_first_nation_2023.json',
-        'data/output/chippewas_of_rama_first_nation_2024.json',
-        'data/output/chippewas_of_saugeen_first_nation_2021.json',
-        'data/output/chippewas_of_the_thames_first_nation_2020.json',
-        'data/output/chippewas_of_the_thames_first_nation_2021.json',
-        'data/output/chippewas_of_the_thames_first_nation_2022.json',
-        'data/output/chippewas_of_the_thames_first_nation_2023.json',
-        'data/output/chippewas_of_the_thames_first_nation_2024.json',
-        'data/output/clearwater_river_dene_nation_2020.json',
-        'data/output/cold_lake_first_nations_2020.json',
-        'data/output/cold_lake_first_nations_2021.json',
-        'data/output/cold_lake_first_nations_2022.json',
-        'data/output/cold_lake_first_nations_2023.json',
-        'data/output/cold_lake_first_nations_2024.json',
-        'data/output/coldwater_indian_band_2020.json',
-        'data/output/coldwater_indian_band_2021.json',
-        'data/output/coldwater_indian_band_2022.json',
-        'data/output/coldwater_indian_band_2023.json',
-        'data/output/conseil_de_la_nation_innu_matimekush-lac_john_2024.json',
-        'data/output/conseil_de_la_nation_innu_matimekush_-_lac_john_2023.json',
-        'data/output/conseil_de_la_nation_innu_matimekush_–_lac_john_2020.json',
-        'data/output/conseil_de_la_nation_innu_matimekush_–_lac_john_2021.json',
-        'data/output/conseil_de_la_première_nation_abitibiwinni_2020.json',
-        'data/output/conseil_de_la_première_nation_abitibiwinni_2021.json',
-        'data/output/conseil_de_la_première_nation_abitibiwinni_2022.json',
-        'data/output/conseil_de_la_première_nation_abitibiwinni_2023.json',
-        'data/output/conseil_de_la_première_nation_abitibiwinni_2024.json',
-        'data/output/conseil_de_la_première_nation_des_innus_essipit_2020.json',
-        'data/output/conseil_de_la_première_nation_des_innus_essipit_2021.json',
-        'data/output/conseil_de_la_première_nation_des_innus_essipit_2023.json',
-        'data/output/conseil_de_la_première_nation_des_innus_essipit_2024.json',
-        'data/output/conseil_des_abénakis_d'odanak_2020.json',
-        'data/output/conseil_des_abénakis_d'odanak_2021.json',
-        'data/output/conseil_des_abénakis_d'odanak_2023.json',
-        'data/output/conseil_des_abénakis_d'odanak_2024.json',
-        'data/output/conseil_des_abénakis_de_wôlinak_2020.json',
-        'data/output/conseil_des_abénakis_de_wôlinak_2021.json',
-        'data/output/conseil_des_abénakis_de_wôlinak_2023.json',
-        'data/output/conseil_des_abénakis_de_wôlinak_2024.json',
-        'data/output/conseil_des_abénakis_dodanak_2020.json',
-        'data/output/conseil_des_abénakis_dodanak_2021.json',
-        'data/output/conseil_des_abénakis_dodanak_2023.json',
-        'data/output/conseil_des_abénakis_dodanak_2024.json',
-        'data/output/conseil_des_anicinapek_de_kitcisakik_2020.json',
-        'data/output/conseil_des_anicinapek_de_kitcisakik_2021.json',
-        'data/output/conseil_des_anicinapek_de_kitcisakik_2022.json',
-        'data/output/conseil_des_anicinapek_de_kitcisakik_2023.json',
-        'data/output/conseil_des_anicinapek_de_kitcisakik_2024.json',
-        'data/output/conseil_des_atikamekw_d'opitciwan_2020.json',
-        'data/output/conseil_des_atikamekw_d'opitciwan_2021.json',
-        'data/output/conseil_des_atikamekw_d'opitciwan_2023.json',
-        'data/output/conseil_des_atikamekw_d'opitciwan_2024.json',
-        'data/output/conseil_des_atikamekw_de_manawan_2020.json',
-        'data/output/conseil_des_atikamekw_de_manawan_2021.json',
-        'data/output/conseil_des_atikamekw_de_manawan_2023.json',
-        'data/output/conseil_des_atikamekw_de_manawan_2024.json',
-        'data/output/conseil_des_atikamekw_de_wemotaci_2020.json',
-        'data/output/conseil_des_atikamekw_de_wemotaci_2021.json',
-        'data/output/conseil_des_atikamekw_de_wemotaci_2023.json',
-        'data/output/conseil_des_atikamekw_de_wemotaci_2024.json',
-        'data/output/conseil_des_atikamekw_dopitciwan_2020.json',
-        'data/output/conseil_des_atikamekw_dopitciwan_2021.json',
-        'data/output/conseil_des_atikamekw_dopitciwan_2023.json',
-        'data/output/conseil_des_atikamekw_dopitciwan_2024.json',
-        'data/output/conseil_des_innu_de_ekuanitshit_2020.json',
-        'data/output/conseil_des_innu_de_ekuanitshit_2021.json',
-        'data/output/conseil_des_innu_de_ekuanitshit_2023.json',
-        'data/output/conseil_des_innus_de_pakua_shipu_2020.json',
-        'data/output/conseil_des_innus_de_pakua_shipu_2021.json',
-        'data/output/conseil_des_innus_de_pakua_shipu_2023.json',
-        'data/output/conseil_des_innus_de_pessamit_2020.json',
-        'data/output/conseil_des_innus_de_pessamit_2021.json',
-        'data/output/conseil_des_innus_de_pessamit_2023.json',
-        'data/output/conseil_des_innus_de_pessamit_2024.json',
-        'data/output/conseil_des_montagnais_de_unamen_shipu_2020.json',
-        'data/output/conseil_des_montagnais_de_unamen_shipu_2021.json',
-        'data/output/conseil_des_montagnais_de_unamen_shipu_2023.json',
-        'data/output/conseil_des_montagnais_de_unamen_shipu_2024.json',
-        'data/output/constance_lake_first_nation_2020.json',
-        'data/output/constance_lake_first_nation_2021.json',
-        'data/output/constance_lake_first_nation_2022.json',
-        'data/output/constance_lake_first_nation_2023.json',
-        'data/output/constance_lake_first_nation_2024.json',
-        'data/output/cook's_ferry_indian_band_2020.json',
-        'data/output/cook's_ferry_indian_band_2021.json',
-        'data/output/cook's_ferry_indian_band_2023.json',
-        'data/output/cooks_ferry_indian_band_2020.json',
-        'data/output/cooks_ferry_indian_band_2021.json',
-        'data/output/cooks_ferry_indian_band_2022.json',
-        'data/output/cooks_ferry_indian_band_2023.json',
-        'data/output/cote_first_nation_2020.json',
-        'data/output/cote_first_nation_2021.json',
-        'data/output/couchiching_first_nation_2021.json',
-        'data/output/cowessess_first_nation_#73_2020.json',
-        'data/output/cowessess_first_nation_#73_2021.json',
-        'data/output/cowessess_first_nation_#73_2022.json',
-        'data/output/cowessess_first_nation_#73_2023.json',
-        'data/output/cowichan_tribes_2020.json',
-        'data/output/cowichan_tribes_2021.json',
-        'data/output/cowichan_tribes_2022.json',
-        'data/output/cowichan_tribes_2023.json',
-        'data/output/cowichan_tribes_2024.json',
-        'data/output/cross_lake_band_of_indians_2021.json',
-        'data/output/cross_lake_band_of_indians_2022.json',
-        'data/output/cross_lake_band_of_indians_2023.json',
-        'data/output/cross_lake_band_of_indians_2024.json',
-        'data/output/cumberland_house_cree_nation_2020.json',
-        'data/output/cumberland_house_cree_nation_2021.json',
-        'data/output/cumberland_house_cree_nation_2022.json',
-        'data/output/cumberland_house_cree_nation_2023.json',
-        'data/output/cumberland_house_cree_nation_2024.json',
-        'data/output/curve_lake_first_nation_2020.json',
-        'data/output/curve_lake_first_nation_2021.json',
-        'data/output/curve_lake_first_nation_2022.json',
-        'data/output/curve_lake_first_nation_2023.json',
-        'data/output/da'naxda'xw_first_nation_2020.json',
-        'data/output/dakota_plains_wahpeton_nation_2020.json',
-        'data/output/dakota_plains_wahpeton_nation_2021.json',
-        'data/output/dakota_plains_wahpeton_nation_2022.json',
-        'data/output/dakota_plains_wahpeton_nation_2023.json',
-        'data/output/dakota_plains_wahpeton_nation_2024.json',
-        'data/output/dakota_tipi_first_nation_2021.json',
-        'data/output/dakota_tipi_first_nation_2022.json',
-        'data/output/dakota_tipi_first_nation_2023.json',
-        'data/output/danaxdaxw_first_nation_2020.json',
-        'data/output/dauphin_river_first_nation_2020.json',
-        'data/output/dauphin_river_first_nation_2021.json',
-        'data/output/dauphin_river_first_nation_2022.json',
-        'data/output/dauphin_river_first_nation_2023.json',
-        'data/output/dauphin_river_first_nation_2024.json',
-        'data/output/day_star_first_nation_2020.json',
-        'data/output/day_star_first_nation_2021.json',
-        'data/output/deer_lake_first_nation_2020.json',
-        'data/output/deer_lake_first_nation_2021.json',
-        'data/output/deer_lake_first_nation_2022.json',
-        'data/output/deer_lake_first_nation_2023.json',
-        'data/output/deer_lake_first_nation_2024.json',
-        'data/output/deh_gah_got'ie_first_nation_2020.json',
-        'data/output/deh_gah_got'ie_first_nation_2021.json',
-        'data/output/deh_gah_gotie_first_nation_2020.json',
-        'data/output/deh_gah_gotie_first_nation_2021.json',
-        'data/output/dene_tha'_first_nation_2020.json',
-        'data/output/dene_tha'_first_nation_2021.json',
-        'data/output/dene_tha'_first_nation_2022.json',
-        'data/output/dene_tha'_first_nation_2023.json',
-        'data/output/dene_tha_first_nation_2020.json',
-        'data/output/dene_tha_first_nation_2021.json',
-        'data/output/dene_tha_first_nation_2022.json',
-        'data/output/dene_tha_first_nation_2023.json',
-        'data/output/deninu_k'ue_first_nation_2020.json',
-        'data/output/deninu_k'ue_first_nation_2021.json',
-        'data/output/deninu_k'ue_first_nation_2023.json',
-        'data/output/deninu_kue_first_nation_2020.json',
-        'data/output/deninu_kue_first_nation_2021.json',
-        'data/output/deninu_kue_first_nation_2023.json',
-        'data/output/ditidaht_first_nation_2020.json',
-        'data/output/ditidaht_first_nation_2021.json',
-        'data/output/ditidaht_first_nation_2022.json',
-        'data/output/ditidaht_first_nation_2023.json',
-        'data/output/ditidaht_first_nation_2024.json',
-        'data/output/doig_river_first_nation_2020.json',
-        'data/output/doig_river_first_nation_2021.json',
-        'data/output/doig_river_first_nation_2022.json',
-        'data/output/doig_river_first_nation_2023.json',
-        'data/output/doig_river_first_nation_2024.json',
-        'data/output/dokis_first_nation_2020.json',
-        'data/output/dokis_first_nation_2021.json',
-        'data/output/dokis_first_nation_2022.json',
-        'data/output/dokis_first_nation_2023.json',
-        'data/output/dokis_first_nation_2024.json',
-        'data/output/douglas_indian_band_2020.json',
-        'data/output/douglas_indian_band_2021.json',
-        'data/output/douglas_indian_band_2022.json',
-        'data/output/douglas_indian_band_2023.json',
-        'data/output/douglas_indian_band_2024.json',
-        'data/output/driftpile_cree_nation_2020.json',
-        'data/output/driftpile_cree_nation_2021.json',
-        'data/output/driftpile_cree_nation_2022.json',
-        'data/output/driftpile_cree_nation_2023.json',
-        'data/output/driftpile_cree_nation_2024.json',
-        'data/output/duncan's_first_nation_2020.json',
-        'data/output/duncan's_first_nation_2021.json',
-        'data/output/duncan's_first_nation_2022.json',
-        'data/output/duncan's_first_nation_2023.json',
-        'data/output/duncan's_first_nation_2024.json',
-        'data/output/duncans_first_nation_2020.json',
-        'data/output/duncans_first_nation_2021.json',
-        'data/output/duncans_first_nation_2022.json',
-        'data/output/duncans_first_nation_2023.json',
-        'data/output/duncans_first_nation_2024.json',
-        'data/output/dzawada'enuxw_first_nation_2020.json',
-        'data/output/dzawada'enuxw_first_nation_2021.json',
-        'data/output/dzawada'enuxw_first_nation_2022.json',
-        'data/output/dzawada'enuxw_first_nation_2023.json',
-        'data/output/dzawada'enuxw_first_nation_2024.json',
-        'data/output/dzawadaenuxw_first_nation_2020.json',
-        'data/output/dzawadaenuxw_first_nation_2021.json',
-        'data/output/dzawadaenuxw_first_nation_2022.json',
-        'data/output/dzawadaenuxw_first_nation_2023.json',
-        'data/output/dzawadaenuxw_first_nation_2024.json',
-        'data/output/eabametoong_first_nation_2020.json',
-        'data/output/eabametoong_first_nation_2021.json',
-        'data/output/eabametoong_first_nation_2022.json',
-        'data/output/eabametoong_first_nation_2023.json',
-        'data/output/eabametoong_first_nation_2024.json',
-        'data/output/eagle_lake_first_nation_2021.json',
-        'data/output/eagle_lake_first_nation_2022.json',
-        'data/output/eagle_lake_first_nation_2023.json',
-        'data/output/eagle_lake_first_nation_2024.json',
-        'data/output/ebb_and_flow_first_nation_2020.json',
-        'data/output/ebb_and_flow_first_nation_2021.json',
-        'data/output/ebb_and_flow_first_nation_2022.json',
-        'data/output/eel_ground_(natoaganeg)_first_nation_2020.json',
-        'data/output/eel_ground_(natoaganeg)_first_nation_2021.json',
-        'data/output/eel_river_bar_first_nation_2020.json',
-        'data/output/eel_river_bar_first_nation_2023.json',
-        'data/output/ehattesaht_chinehkint_first_nation_2020.json',
-        'data/output/ehattesaht_chinehkint_first_nation_2021.json',
-        'data/output/ehattesaht_chinehkint_first_nation_2022.json',
-        'data/output/ehattesaht_chinehkint_first_nation_2023.json',
-        'data/output/elsipogtog_first_nation_2021.json',
-        'data/output/elsipogtog_first_nation_2022.json',
-        'data/output/elsipogtog_first_nation_2023.json',
-        'data/output/elsipogtog_first_nation_2024.json',
-        'data/output/english_river_first_nation_2021.json',
-        'data/output/english_river_first_nation_2022.json',
-        'data/output/english_river_first_nation_2023.json',
-        'data/output/enoch_cree_nation_2020.json',
-        'data/output/enoch_cree_nation_2021.json',
-        'data/output/enoch_cree_nation_2022.json',
-        'data/output/enoch_cree_nation_2023.json',
-        'data/output/enoch_cree_nation_2024.json',
-        'data/output/esgenoopetitj_first_nation_2020.json',
-        'data/output/esgenoopetitj_first_nation_2021.json',
-        'data/output/esgenoopetitj_first_nation_2022.json',
-        'data/output/esgenoopetitj_first_nation_2023.json',
-        'data/output/esgenoopetitj_first_nation_2024.json',
-        'data/output/eskasoni_band_council_2020.json',
-        'data/output/eskasoni_band_council_2021.json',
-        'data/output/eskasoni_band_council_2022.json',
-        'data/output/esketemc_2020.json',
-        'data/output/esketemc_2021.json',
-        'data/output/esketemc_2023.json',
-        'data/output/esketemc_2024.json',
-        'data/output/esquimalt_nation_2020.json',
-        'data/output/esquimalt_nation_2021.json',
-        'data/output/esquimalt_nation_2022.json',
-        'data/output/esquimalt_nation_2023.json',
-        'data/output/esquimalt_nation_2024.json',
-        'data/output/fisher_river_cree_nation_2021.json',
-        'data/output/fisher_river_cree_nation_2022.json',
-        'data/output/fisher_river_cree_nation_2023.json',
-        'data/output/fisher_river_cree_nation_2024.json',
-        'data/output/fishing_lake_first_nation_2020.json',
-        'data/output/fishing_lake_first_nation_2021.json',
-        'data/output/fishing_lake_first_nation_2022.json',
-        'data/output/fishing_lake_first_nation_2023.json',
-        'data/output/fishing_lake_first_nation_2024.json',
-        'data/output/flying_dust_first_nation_2020.json',
-        'data/output/flying_dust_first_nation_2021.json',
-        'data/output/flying_dust_first_nation_2022.json',
-        'data/output/flying_dust_first_nation_2023.json',
-        'data/output/flying_dust_first_nation_2024.json',
-        'data/output/flying_post_first_nation_2020.json',
-        'data/output/flying_post_first_nation_2021.json',
-        'data/output/flying_post_first_nation_2022.json',
-        'data/output/flying_post_first_nation_2023.json',
-        'data/output/fond_du_lac_denesuline_first_nation_2020.json',
-        'data/output/fond_du_lac_denesuline_first_nation_2021.json',
-        'data/output/fond_du_lac_denesuline_first_nation_2022.json',
-        'data/output/fond_du_lac_denesuline_first_nation_2023.json',
-        'data/output/fond_du_lac_denesuline_first_nation_2024.json',
-        'data/output/fort_albany_first_nation_2020.json',
-        'data/output/fort_albany_first_nation_2021.json',
-        'data/output/fort_albany_first_nation_2022.json',
-        'data/output/fort_albany_first_nation_2023.json',
-        'data/output/fort_alexander_indian_band_(o_a_sagkeeng_first_nation)_2021.json',
-        'data/output/fort_alexander_indian_band_(o_a_sagkeeng_first_nation)_2023.json',
-        'data/output/fort_alexander_indian_band_(o_a_sagkeeng_first_nation)_2024.json',
-        'data/output/fort_folly_first_nation_2021.json',
-        'data/output/fort_folly_first_nation_2023.json',
-        'data/output/fort_folly_first_nation_2024.json',
-        'data/output/fort_good_hope_dene_community_council_2020.json',
-        'data/output/fort_good_hope_dene_community_council_2021.json',
-        'data/output/fort_good_hope_dene_community_council_2023.json',
-        'data/output/fort_good_hope_dene_community_council_2024.json',
-        'data/output/fort_mckay_first_nation_2020.json',
-        'data/output/fort_mckay_first_nation_2021.json',
-        'data/output/fort_mckay_first_nation_2022.json',
-        'data/output/fort_mckay_first_nation_2023.json',
-        'data/output/fort_mckay_first_nation_2024.json',
-        'data/output/fort_mcmurray_#468_first_nation_2020.json',
-        'data/output/fort_mcmurray_#468_first_nation_2021.json',
-        'data/output/fort_mcmurray_#468_first_nation_2022.json',
-        'data/output/fort_nelson_first_nation_2020.json',
-        'data/output/fort_nelson_first_nation_2021.json',
-        'data/output/fort_nelson_first_nation_2022.json',
-        'data/output/fort_nelson_first_nation_2023.json',
-        'data/output/fort_nelson_first_nation_2024.json',
-        'data/output/fort_severn_first_nation_2020.json',
-        'data/output/fort_severn_first_nation_2021.json',
-        'data/output/fort_william_first_nation_2020.json',
-        'data/output/fort_william_first_nation_2021.json',
-        'data/output/fort_william_first_nation_2022.json',
-        'data/output/fort_william_first_nation_2023.json',
-        'data/output/fort_william_first_nation_2024.json',
-        'data/output/fox_lake_cree_nation_2020.json',
-        'data/output/fox_lake_cree_nation_2021.json',
-        'data/output/fox_lake_cree_nation_2022.json',
-        'data/output/fox_lake_cree_nation_2023.json',
-        'data/output/frog_lake_first_nation_2020.json',
-        'data/output/frog_lake_first_nation_2021.json',
-        'data/output/frog_lake_first_nation_2022.json',
-        'data/output/frog_lake_first_nation_2023.json',
-        'data/output/frog_lake_first_nation_2024.json',
-        'data/output/gambler_first_nation_2020.json',
-        'data/output/gambler_first_nation_2021.json',
-        'data/output/gambler_first_nation_2022.json',
-        'data/output/gambler_first_nation_2023.json',
-        'data/output/gambler_first_nation_2024.json',
-        'data/output/garden_hill_first_nation_2020.json',
-        'data/output/garden_hill_first_nation_2021.json',
-        'data/output/garden_river_first_nation_2020.json',
-        'data/output/garden_river_first_nation_2021.json',
-        'data/output/garden_river_first_nation_2022.json',
-        'data/output/garden_river_first_nation_2023.json',
-        'data/output/garden_river_first_nation_2024.json',
-        'data/output/george_gordon_first_nation_2020.json',
-        'data/output/george_gordon_first_nation_2021.json',
-        'data/output/george_gordon_first_nation_2022.json',
-        'data/output/george_gordon_first_nation_2023.json',
-        'data/output/george_gordon_first_nation_2024.json',
-        'data/output/ginoogaming_first_nation_2020.json',
-        'data/output/ginoogaming_first_nation_2021.json',
-        'data/output/ginoogaming_first_nation_2022.json',
-        'data/output/ginoogaming_first_nation_2023.json',
-        'data/output/ginoogaming_first_nation_2024.json',
-        'data/output/gitanmaax_band_council_2020.json',
-        'data/output/gitanyow_band_2021.json',
-        'data/output/gitanyow_band_council_2020.json',
-        'data/output/gitgaat_first_nation_2020.json',
-        'data/output/gitgaat_first_nation_2022.json',
-        'data/output/gitgaat_first_nation_2023.json',
-        'data/output/gitgaat_first_nation_2024.json',
-        'data/output/gitsegukla_first_nation_2020.json',
-        'data/output/gitsegukla_first_nation_2021.json',
-        'data/output/gitsegukla_first_nation_2022.json',
-        'data/output/gitsegukla_first_nation_2023.json',
-        'data/output/gitsegukla_first_nation_2024.json',
-        'data/output/gitwangak_band_2020.json',
-        'data/output/gitwangak_band_2021.json',
-        'data/output/gitwangak_band_2022.json',
-        'data/output/gitwangak_indian_band_2023.json',
-        'data/output/gitwangak_indian_band_2024.json',
-        'data/output/gitxaala_nation_2020.json',
-        'data/output/gitxaala_nation_2021.json',
-        'data/output/gitxaala_nation_2022.json',
-        'data/output/gitxaala_nation_2023.json',
-        'data/output/glen_vowell_band_council_2020.json',
-        'data/output/glen_vowell_band_council_2021.json',
-        'data/output/glooscap_first_nation_2020.json',
-        'data/output/glooscap_first_nation_2021.json',
-        'data/output/glooscap_first_nation_2022.json',
-        'data/output/glooscap_first_nation_2023.json',
-        'data/output/glooscap_first_nation_2024.json',
-        'data/output/gods_lake_first_nation_2020.json',
-        'data/output/grassy_narrows_first_nation_2020.json',
-        'data/output/grassy_narrows_first_nation_2021.json',
-        'data/output/grassy_narrows_first_nation_2022.json',
-        'data/output/gwasala-nakwaxdaxw_nation_2020.json',
-        'data/output/gwasala-nakwaxdaxw_nation_2021.json',
-        'data/output/gwasala-nakwaxdaxw_nation_2023.json',
-        'data/output/gwasala-nakwaxdaxw_nation_2024.json',
-        'data/output/gwawaenuk_tribe_2020.json',
-        'data/output/gwawaenuk_tribe_2021.json',
-        'data/output/gwawaenuk_tribe_2022.json',
-        'data/output/gwichya_gwichin_band_2020.json',
-        'data/output/gwichya_gwichin_band_2021.json',
-        'data/output/gwichya_gwichin_band_2023.json',
-        'data/output/gwichya_gwichin_band_2024.json',
-        'data/output/hagwilget_first_nation_government_2020.json',
-        'data/output/hagwilget_first_nation_government_2021.json',
-        'data/output/hagwilget_village_council_2022.json',
-        'data/output/haisla_nation_council_2020.json',
-        'data/output/haisla_nation_council_2021.json',
-        'data/output/halalt_first_nation_2020.json',
-        'data/output/halalt_first_nation_2021.json',
-        'data/output/halalt_first_nation_2022.json',
-        'data/output/halalt_first_nation_2023.json',
-        'data/output/halalt_first_nation_2024.json',
-        'data/output/halfway_river_first_nation_2020.json',
-        'data/output/halfway_river_first_nation_2021.json',
-        'data/output/halfway_river_first_nation_2022.json',
-        'data/output/halfway_river_first_nation_2023.json',
-        'data/output/hatchet_lake_denesuline_nation_2020.json',
-        'data/output/hatchet_lake_denesuline_nation_2021.json',
-        'data/output/hatchet_lake_denesuline_nation_2022.json',
-        'data/output/hatchet_lake_denesuline_nation_2023.json',
-        'data/output/hatchet_lake_denesuline_nation_2024.json',
-        'data/output/heart_lake_first_nation_2020.json',
-        'data/output/heiltsuk_indian_band_2020.json',
-        'data/output/heiltsuk_indian_band_2021.json',
-        'data/output/heiltsuk_indian_band_2022.json',
-        'data/output/heiltsuk_indian_band_2023.json',
-        'data/output/heiltsuk_indian_band_2024.json',
-        'data/output/henvey_inlet_first_nation_2020.json',
-        'data/output/henvey_inlet_first_nation_2021.json',
-        'data/output/henvey_inlet_first_nation_2022.json',
-        'data/output/henvey_inlet_first_nation_2023.json',
-        'data/output/henvey_inlet_first_nation_2024.json',
-        'data/output/hesquiaht_first_nation_2020.json',
-        'data/output/hesquiaht_first_nation_2021.json',
-        'data/output/hesquiaht_first_nation_2022.json',
-        'data/output/hesquiaht_first_nation_2023.json',
-        'data/output/hiawatha_first_nation_2020.json',
-        'data/output/hiawatha_first_nation_2021.json',
-        'data/output/hiawatha_first_nation_2022.json',
-        'data/output/hiawatha_first_nation_2023.json',
-        'data/output/hiawatha_first_nation_2024.json',
-        'data/output/high_bar_first_nation_2020.json',
-        'data/output/high_bar_first_nation_2021.json',
-        'data/output/high_bar_first_nation_2022.json',
-        'data/output/high_bar_first_nation_2023.json',
-        'data/output/high_bar_first_nation_2024.json',
-        'data/output/hollow_water_first_nation_2020.json',
-        'data/output/hollow_water_first_nation_2021.json',
-        'data/output/hollow_water_first_nation_2022.json',
-        'data/output/hollow_water_first_nation_2023.json',
-        'data/output/homalco_first_nation_2020.json',
-        'data/output/homalco_first_nation_2021.json',
-        'data/output/homalco_first_nation_2022.json',
-        'data/output/homalco_first_nation_2024.json',
-        'data/output/horse_lake_first_nation_2020.json',
-        'data/output/horse_lake_first_nation_2021.json',
-        'data/output/horse_lake_first_nation_2022.json',
-        'data/output/horse_lake_first_nation_2023.json',
-        'data/output/horse_lake_first_nation_2024.json',
-        'data/output/hupacasath_first_nation_2020.json',
-        'data/output/hupacasath_first_nation_2021.json',
-        'data/output/hupacasath_first_nation_2022.json',
-        'data/output/hupacasath_first_nation_2023.json',
-        'data/output/hupacasath_first_nation_2024.json',
-        'data/output/indian_island_first_nation_2021.json',
-        'data/output/indian_island_first_nation_2022.json',
-        'data/output/indian_island_first_nation_2023.json',
-        'data/output/indian_island_first_nation_2024.json',
-        'data/output/innu-takuaikan_uashat_mak_mani-utenam_2020.json',
-        'data/output/innu-takuaikan_uashat_mak_mani-utenam_2021.json',
-        'data/output/innu_takuaikan_uashat_mak_mani-utenam_2023.json',
-        'data/output/innu_takuaikan_uashat_mak_mani-utenam_2024.json',
-        'data/output/inuvik_native_band_2020.json',
-        'data/output/inuvik_native_band_2021.json',
-        'data/output/inuvik_native_band_2023.json',
-        'data/output/inuvik_native_band_2024.json',
-        'data/output/iskatewizaagegan_no._39_independent_first_nation_2020.json',
-        'data/output/iskatewizaagegan_no._39_independent_first_nation_2021.json',
-        'data/output/iskatewizaagegan_no._39_independent_first_nation_2022.json',
-        'data/output/iskut_band_council_2020.json',
-        'data/output/iskut_band_council_2021.json',
-        'data/output/iskut_band_council_2022.json',
-        'data/output/iskut_band_council_2023.json',
-        'data/output/iskut_band_council_2024.json',
-        'data/output/james_smith_cree_nation_2020.json',
-        'data/output/james_smith_cree_nation_2021.json',
-        'data/output/james_smith_cree_nation_2022.json',
-        'data/output/james_smith_cree_nation_2023.json',
-        'data/output/james_smith_cree_nation_2024.json',
-        'data/output/jean_marie_river_first_nation_2020.json',
-        'data/output/jean_marie_river_first_nation_2021.json',
-        'data/output/jean_marie_river_first_nation_2023.json',
-        'data/output/jean_marie_river_first_nation_2024.json',
-        'data/output/kaagee_tu_first_nation_2020.json',
-        'data/output/kaagee_tu_first_nation_2021.json',
-        'data/output/kaagee_tu_first_nation_2023.json',
-        'data/output/kaagee_tu_first_nation_2024.json',
-        'data/output/kahkewistahaw_first_nation_2020.json',
-        'data/output/kahkewistahaw_first_nation_2021.json',
-        'data/output/kahkewistahaw_first_nation_2022.json',
-        'data/output/kahkewistahaw_first_nation_2023.json',
-        'data/output/kahkewistahaw_first_nation_2024.json',
-        'data/output/kanaka_bar_indian_band_2020.json',
-        'data/output/kanaka_bar_indian_band_2021.json',
-        'data/output/kanaka_bar_indian_band_2022.json',
-        'data/output/kanaka_bar_indian_band_2023.json',
-        'data/output/kanaka_bar_indian_band_2024.json',
-        'data/output/kapaweno_first_nation_2021.json',
-        'data/output/kapaweno_first_nation_2022.json',
-        'data/output/kapaweno_first_nation_2023.json',
-        'data/output/kapaweno_first_nation_2024.json',
-        'data/output/kasabonika_lake_first_nation_2020.json',
-        'data/output/kasabonika_lake_first_nation_2021.json',
-        'data/output/kasabonika_lake_first_nation_2022.json',
-        'data/output/kasabonika_lake_first_nation_2023.json',
-        'data/output/kasabonika_lake_first_nation_2024.json',
-        'data/output/katlodeeche_first_nation_2021.json',
-        'data/output/katzie_first_nation_2020.json',
-        'data/output/katzie_first_nation_2021.json',
-        'data/output/katzie_first_nation_2022.json',
-        'data/output/katzie_first_nation_2023.json',
-        'data/output/katzie_first_nation_2024.json',
-        'data/output/kawacatoose_first_nation_2020.json',
-        'data/output/kawacatoose_first_nation_2021.json',
-        'data/output/kawacatoose_first_nation_2022.json',
-        'data/output/kawacatoose_first_nation_2023.json',
-        'data/output/kawacatoose_first_nation_2024.json',
-        'data/output/kebaowek_first_nation_2020.json',
-        'data/output/kebaowek_first_nation_2021.json',
-        'data/output/kebaowek_first_nation_2022.json',
-        'data/output/kebaowek_first_nation_2023.json',
-        'data/output/kebaowek_first_nation_2024.json',
-        'data/output/keeseekoose_first_nation_2020.json',
-        'data/output/keeseekoose_first_nation_2021.json',
-        'data/output/keeseekoose_first_nation_2022.json',
-        'data/output/keeseekoowenin_first_nation_2020.json',
-        'data/output/keeseekoowenin_first_nation_2021.json',
-        'data/output/keeseekoowenin_first_nation_2022.json',
-        'data/output/keeseekoowenin_first_nation_2023.json',
-        'data/output/kehewin_cree_nation_2020.json',
-        'data/output/kehewin_cree_nation_2021.json',
-        'data/output/kehewin_cree_nation_2022.json',
-        'data/output/kehewin_cree_nation_2023.json',
-        'data/output/kehewin_cree_nation_2024.json',
-        'data/output/kingfisher_lake_first_nation_2020.json',
-        'data/output/kingsclear_first_nation_2021.json',
-        'data/output/kingsclear_first_nation_2022.json',
-        'data/output/kingsclear_first_nation_2023.json',
-        'data/output/kingsclear_first_nation_2024.json',
-        'data/output/kinistin_saulteaux_nation_2020.json',
-        'data/output/kinistin_saulteaux_nation_2021.json',
-        'data/output/kinistin_saulteaux_nation_2022.json',
-        'data/output/kinistin_saulteaux_nation_2023.json',
-        'data/output/kinistin_saulteaux_nation_2024.json',
-        'data/output/kinonjeoshtegon_first_nation_2020.json',
-        'data/output/kinonjeoshtegon_first_nation_2021.json',
-        'data/output/kinonjeoshtegon_first_nation_2022.json',
-        'data/output/kinonjeoshtegon_first_nation_2023.json',
-        'data/output/kinonjeoshtegon_first_nation_2024.json',
-        'data/output/kispiox_band_council_2020.json',
-        'data/output/kitasoo_indian_band_2020.json',
-        'data/output/kitasoo_indian_band_2021.json',
-        'data/output/kitasoo_xaixais_nation_2022.json',
-        'data/output/kitasoo_xaixais_nation_2023.json',
-        'data/output/kitasoo_xaixais_nation_2024.json',
-        'data/output/kitchenuhmaykoosib_inninuwug_2020.json',
-        'data/output/kitchenuhmaykoosib_inninuwug_2021.json',
-        'data/output/kitchenuhmaykoosib_inninuwug_2022.json',
-        'data/output/kitchenuhmaykoosib_inninuwug_2023.json',
-        'data/output/kitigan_zibi_anishinabeg_2020.json',
-        'data/output/kitigan_zibi_anishinabeg_first_nation_2021.json',
-        'data/output/kitigan_zibi_anishinabeg_first_nation_2023.json',
-        'data/output/kitselas_first_nation_2020.json',
-        'data/output/kitselas_first_nation_2021.json',
-        'data/output/kitselas_first_nation_2022.json',
-        'data/output/kitselas_first_nation_2023.json',
-        'data/output/kitselas_first_nation_2024.json',
-        'data/output/kitsumkalum_indian_band_2020.json',
-        'data/output/kitsumkalum_indian_band_2021.json',
-        'data/output/kitsumkalum_indian_band_2022.json',
-        'data/output/kitsumkalum_indian_band_2023.json',
-        'data/output/kitsumkalum_indian_band_2024.json',
-        'data/output/klahoose_first_nation_2020.json',
-        'data/output/klahoose_first_nation_2021.json',
-        'data/output/klahoose_first_nation_2022.json',
-        'data/output/klahoose_first_nation_2023.json',
-        'data/output/klahoose_first_nation_2024.json',
-        'data/output/komoks_first_nation_2020.json',
-        'data/output/komoks_first_nation_2021.json',
-        'data/output/komoks_first_nation_2022.json',
-        'data/output/kwadacha_nation_2020.json',
-        'data/output/kwadacha_nation_2021.json',
-        'data/output/kwadacha_nation_2022.json',
-        'data/output/kwadacha_nation_2024.json',
-        'data/output/kwakiutl_band_council_2020.json',
-        'data/output/kwakiutl_band_council_2021.json',
-        'data/output/kwakiutl_band_council_2022.json',
-        'data/output/kwantlen_first_nation_2020.json',
-        'data/output/kwantlen_first_nation_2021.json',
-        'data/output/kwantlen_first_nation_2022.json',
-        'data/output/kwantlen_first_nation_2023.json',
-        'data/output/kwantlen_first_nation_2024.json',
-        'data/output/kwaw-kwaw-apilt_first_nation_2020.json',
-        'data/output/kwaw-kwaw-apilt_first_nation_2021.json',
-        'data/output/kwaw-kwaw-apilt_first_nation_2022.json',
-        'data/output/kwaw-kwaw-apilt_first_nation_2023.json',
-        'data/output/kwaw-kwaw-apilt_first_nation_2024.json',
-        'data/output/kwiakah_first_nation_2020.json',
-        'data/output/kwiakah_first_nation_2021.json',
-        'data/output/kwiakah_first_nation_2022.json',
-        'data/output/kwiakah_first_nation_2023.json',
-        'data/output/kwiakah_first_nation_2024.json',
-        'data/output/kwikwasutinuxw_haxwamis_first_nation_2020.json',
-        'data/output/kwikwasutinuxw_haxwamis_first_nation_2021.json',
-        'data/output/kwikwasutinuxw_haxwamis_first_nation_2022.json',
-        'data/output/kwikwasutinuxw_haxwamis_first_nation_2024.json',
-        'data/output/kwikwetlem_first_nation_2020.json',
-        'data/output/kwikwetlem_first_nation_2021.json',
-        'data/output/kwikwetlem_first_nation_2022.json',
-        'data/output/kwikwetlem_first_nation_2023.json',
-        'data/output/kwikwetlem_first_nation_2024.json',
-        'data/output/kómoks_first_nation_2023.json',
-        'data/output/kómoks_first_nation_2024.json',
-        'data/output/lac_des_mille_lacs_first_nation_2020.json',
-        'data/output/lac_des_mille_lacs_first_nation_2021.json',
-        'data/output/lac_des_mille_lacs_first_nation_2022.json',
-        'data/output/lac_des_mille_lacs_first_nation_2023.json',
-        'data/output/lac_des_mille_lacs_first_nation_2024.json',
-        'data/output/lac_la_croix_first_nation_2021.json',
-        'data/output/lac_la_ronge_indian_band_2020.json',
-        'data/output/lac_la_ronge_indian_band_2021.json',
-        'data/output/lac_la_ronge_indian_band_2022.json',
-        'data/output/lac_seul_first_nation_2020.json',
-        'data/output/lac_seul_first_nation_2021.json',
-        'data/output/lac_seul_first_nation_2022.json',
-        'data/output/lac_seul_first_nation_2023.json',
-        'data/output/lac_seul_first_nation_2024.json',
-        'data/output/lake_babine_nation_2020.json',
-        'data/output/lake_babine_nation_2021.json',
-        'data/output/lake_babine_nation_2022.json',
-        'data/output/lake_babine_nation_2023.json',
-        'data/output/lake_babine_nation_2024.json',
-        'data/output/lake_manitoba_treaty_2_first_nation_2020.json',
-        'data/output/lake_manitoba_treaty_2_first_nation_2021.json',
-        'data/output/lake_manitoba_treaty_2_first_nation_2022.json',
-        'data/output/lake_manitoba_treaty_2_first_nation_2023.json',
-        'data/output/lake_manitoba_treaty_2_first_nation_2024.json',
-        'data/output/lax_kwalaams_band_2020.json',
-        'data/output/lax_kwalaams_band_2021.json',
-        'data/output/lax_kwalaams_band_2022.json',
-        'data/output/lax_kwalaams_band_2023.json',
-        'data/output/lax_kwalaams_band_2024.json',
-        'data/output/lennox_island_first_nation_2021.json',
-        'data/output/lennox_island_first_nation_2022.json',
-        'data/output/lennox_island_first_nation_2023.json',
-        'data/output/lennox_island_first_nation_2024.json',
-        'data/output/lheidli_tenneh_band_2020.json',
-        'data/output/lheidli_tenneh_band_2021.json',
-        'data/output/lheidli_tenneh_band_2022.json',
-        'data/output/lheidli_tenneh_band_2023.json',
-        'data/output/lheidli_tenneh_band_2024.json',
-        'data/output/lhooskuz_dene_nation_2020.json',
-        'data/output/lhooskuz_dene_nation_2021.json',
-        'data/output/lhooskuz_dene_nation_2024.json',
-        'data/output/lhtako_dene_nation_2020.json',
-        'data/output/lhtako_dene_nation_2021.json',
-        'data/output/lhtako_dene_nation_2023.json',
-        'data/output/lhtako_dene_nation_2024.json',
-        'data/output/liidlii_kue_first_nation_2020.json',
-        'data/output/liidlii_kue_first_nation_2021.json',
-        'data/output/liidlii_kue_first_nation_2023.json',
-        'data/output/liidlii_kue_first_nation_2024.json',
-        'data/output/lilwat_nation_2020.json',
-        'data/output/lilwat_nation_2021.json',
-        'data/output/lilwat_nation_2022.json',
-        'data/output/lilwat_nation_2023.json',
-        'data/output/lilwat_nation_2024.json',
-        'data/output/listuguj_migmaq_government_2020.json',
-        'data/output/listuguj_migmaq_government_2021.json',
-        'data/output/listuguj_migmaq_government_2022.json',
-        'data/output/listuguj_migmaq_government_2023.json',
-        'data/output/listuguj_migmaq_government_2024.json',
-        'data/output/little_black_bear_first_nation_2020.json',
-        'data/output/little_black_bear_first_nation_2021.json',
-        'data/output/little_black_bear_first_nation_2022.json',
-        'data/output/little_black_bear_first_nation_2023.json',
-        'data/output/little_black_bear_first_nation_2024.json',
-        'data/output/little_grand_rapids_first_nation_2020.json',
-        'data/output/little_grand_rapids_first_nation_2021.json',
-        'data/output/little_grand_rapids_first_nation_2022.json',
-        'data/output/little_grand_rapids_first_nation_2023.json',
-        'data/output/little_grand_rapids_first_nation_2024.json',
-        'data/output/little_saskatchewan_first_nation_2020.json',
-        'data/output/little_shuswap_lake_indian_band_2020.json',
-        'data/output/little_shuswap_lake_indian_band_2021.json',
-        'data/output/long_lake_#58_first_nation_2020.json',
-        'data/output/long_lake_#58_first_nation_2021.json',
-        'data/output/long_lake_#58_first_nation_2022.json',
-        'data/output/long_plain_first_nation_2020.json',
-        'data/output/long_plain_first_nation_2021.json',
-        'data/output/long_plain_first_nation_2022.json',
-        'data/output/long_plain_first_nation_2023.json',
-        'data/output/long_plain_first_nation_2024.json',
-        'data/output/long_point_first_nation_2020.json',
-        'data/output/long_point_first_nation_2021.json',
-        'data/output/long_point_first_nation_2022.json',
-        'data/output/long_point_first_nation_2023.json',
-        'data/output/long_point_first_nation_2024.json',
-        'data/output/louis_bull_tribe_2020.json',
-        'data/output/louis_bull_tribe_2021.json',
-        'data/output/louis_bull_tribe_2022.json',
-        'data/output/louis_bull_tribe_2023.json',
-        'data/output/louis_bull_tribe_2024.json',
-        'data/output/lower_kootenay_band_2020.json',
-        'data/output/lower_kootenay_band_2021.json',
-        'data/output/lower_kootenay_band_2022.json',
-        'data/output/lower_kootenay_band_2023.json',
-        'data/output/lower_kootenay_band_2024.json',
-        'data/output/lower_nicola_indian_band_2020.json',
-        'data/output/lower_nicola_indian_band_2021.json',
-        'data/output/lower_nicola_indian_band_2022.json',
-        'data/output/lower_nicola_indian_band_2023.json',
-        'data/output/lower_nicola_indian_band_2024.json',
-        'data/output/lower_similkameen_indian_band_2020.json',
-        'data/output/lower_similkameen_indian_band_2021.json',
-        'data/output/lower_similkameen_indian_band_2022.json',
-        'data/output/lower_similkameen_indian_band_2023.json',
-        'data/output/lower_similkameen_indian_band_2024.json',
-        'data/output/lubicon_lake_band_no._453_2020.json',
-        'data/output/lubicon_lake_band_no._453_2021.json',
-        'data/output/lucky_man_cree_nation_2021.json',
-        'data/output/lucky_man_cree_nation_2022.json',
-        'data/output/lutsel_ke_dene_first_nation_2020.json',
-        'data/output/lyackson_first_nation_2020.json',
-        'data/output/lyackson_first_nation_2021.json',
-        'data/output/lyackson_first_nation_2022.json',
-        'data/output/lyackson_first_nation_2023.json',
-        'data/output/lyackson_first_nation_2024.json',
-        'data/output/lytton_first_nation_2020.json',
-        'data/output/lytton_first_nation_2021.json',
-        'data/output/lytton_first_nation_2022.json',
-        'data/output/lytton_first_nation_2023.json',
-        'data/output/lytton_first_nation_2024.json',
-        'data/output/madawaska_maliseet_first_nation_new_brunswick_2020.json',
-        'data/output/madawaska_maliseet_first_nation_new_brunswick_2021.json',
-        'data/output/madawaska_maliseet_first_nation_new_brunswick_2022.json',
-        'data/output/madawaska_maliseet_first_nation_new_brunswick_2023.json',
-        'data/output/magnetawan_first_nation_2020.json',
-        'data/output/magnetawan_first_nation_2021.json',
-        'data/output/magnetawan_first_nation_2022.json',
-        'data/output/magnetawan_first_nation_2023.json',
-        'data/output/magnetawan_first_nation_2024.json',
-        'data/output/makwa_sahgaiehcan_first_nation_2020.json',
-        'data/output/makwa_sahgaiehcan_first_nation_2021.json',
-        'data/output/makwa_sahgaiehcan_first_nation_2022.json',
-        'data/output/makwa_sahgaiehcan_first_nation_2023.json',
-        'data/output/makwa_sahgaiehcan_first_nation_2024.json',
-        'data/output/malahat_nation_2020.json',
-        'data/output/malahat_nation_2021.json',
-        'data/output/malahat_nation_2022.json',
-        'data/output/malahat_nation_2023.json',
-        'data/output/malahat_nation_2024.json',
-        'data/output/maliseet_nation_at_tobique_2020.json',
-        'data/output/maliseet_nation_at_tobique_2021.json',
-        'data/output/maliseet_nation_at_tobique_2022.json',
-        'data/output/maliseet_nation_at_tobique_2023.json',
-        'data/output/maliseet_nation_at_tobique_2024.json',
-        'data/output/mamalilikulla_first_nation_2020.json',
-        'data/output/mamalilikulla_first_nation_2021.json',
-        'data/output/mamalilikulla_first_nation_2022.json',
-        'data/output/mamalilikulla_first_nation_2023.json',
-        'data/output/mamalilikulla_first_nation_2024.json',
-        'data/output/manto_sipi_cree_nation_2020.json',
-        'data/output/manto_sipi_cree_nation_2021.json',
-        'data/output/manto_sipi_cree_nation_2022.json',
-        'data/output/manto_sipi_cree_nation_2023.json',
-        'data/output/manto_sipi_cree_nation_2024.json',
-        'data/output/marcel_colomb_first_nation_2020.json',
-        'data/output/marcel_colomb_first_nation_2021.json',
-        'data/output/marcel_colomb_first_nation_2022.json',
-        'data/output/marcel_colomb_first_nation_2023.json',
-        'data/output/matachewan_first_nation_2020.json',
-        'data/output/mathias_colomb_cree_nation_2020.json',
-        'data/output/mathias_colomb_cree_nation_2021.json',
-        'data/output/mathias_colomb_cree_nation_2022.json',
-        'data/output/matsqi_first_nation_2020.json',
-        'data/output/matsqui_first_nation_2021.json',
-        'data/output/matsqui_first_nation_2022.json',
-        'data/output/matsqui_first_nation_2023.json',
-        'data/output/matsqui_first_nation_2024.json',
-        'data/output/mattagami_first_nation_2020.json',
-        'data/output/mattagami_first_nation_2021.json',
-        'data/output/mcdowell_lake_first_nation_2020.json',
-        'data/output/mcdowell_lake_first_nation_2021.json',
-        'data/output/mcdowell_lake_first_nation_2022.json',
-        'data/output/mcdowell_lake_first_nation_2023.json',
-        'data/output/mcdowell_lake_first_nation_2024.json',
-        'data/output/mchigeeng_first_nation_2020.json',
-        'data/output/mchigeeng_first_nation_2021.json',
-        'data/output/mchigeeng_first_nation_2022.json',
-        'data/output/mchigeeng_first_nation_2023.json',
-        'data/output/mcleod_lake_indian_band_2020.json',
-        'data/output/mcleod_lake_indian_band_2021.json',
-        'data/output/mcleod_lake_indian_band_2022.json',
-        'data/output/mcleod_lake_indian_band_2023.json',
-        'data/output/mcleod_lake_indian_band_2024.json',
-        'data/output/membertou_reserve_band_council_2020.json',
-        'data/output/membertou_reserve_band_council_2021.json',
-        'data/output/membertou_reserve_band_council_2022.json',
-        'data/output/membertou_reserve_band_council_2023.json',
-        'data/output/membertou_reserve_band_council_2024.json',
-        'data/output/metepenagiag_mikmaq_nation_2020.json',
-        'data/output/metepenagiag_mikmaq_nation_2021.json',
-        'data/output/metepenagiag_mikmaq_nation_2022.json',
-        'data/output/metepenagiag_mikmaq_nation_2023.json',
-        'data/output/metepenagiag_mikmaq_nation_2024.json',
-        'data/output/metlakatla_first_nation_2020.json',
-        'data/output/metlakatla_first_nation_2021.json',
-        'data/output/metlakatla_first_nation_2022.json',
-        'data/output/metlakatla_first_nation_2023.json',
-        'data/output/metlakatla_first_nation_2024.json',
-        'data/output/miawpukek_band_2020.json',
-        'data/output/miawpukek_band_2021.json',
-        'data/output/miawpukek_band_2022.json',
-        'data/output/miawpukek_band_2023.json',
-        'data/output/michipicoten_first_nation_2020.json',
-        'data/output/michipicoten_first_nation_2021.json',
-        'data/output/michipicoten_first_nation_2022.json',
-        'data/output/michipicoten_first_nation_2023.json',
-        'data/output/michipicoten_first_nation_2024.json',
-        'data/output/micmacs_of_gesgapegiag_band_2020.json',
-        'data/output/micmacs_of_gesgapegiag_band_2021.json',
-        'data/output/micmacs_of_gesgapegiag_band_2022.json',
-        'data/output/micmacs_of_gesgapegiag_band_2023.json',
-        'data/output/micmacs_of_gesgapegiag_band_2024.json',
-        'data/output/mikisew_cree_first_nation_2020.json',
-        'data/output/mikisew_cree_first_nation_2021.json',
-        'data/output/mikisew_cree_first_nation_2022.json',
-        'data/output/mikisew_cree_first_nation_2023.json',
-        'data/output/mikisew_cree_first_nation_2024.json',
-        'data/output/millbrook_first_nation_2020.json',
-        'data/output/millbrook_first_nation_2021.json',
-        'data/output/millbrook_first_nation_2022.json',
-        'data/output/millbrook_first_nation_2023.json',
-        'data/output/millbrook_first_nation_2024.json',
-        'data/output/ministikwan_lake_cree_nation_2021.json',
-        'data/output/ministikwan_lake_cree_nation_2022.json',
-        'data/output/ministikwan_lake_cree_nation_2023.json',
-        'data/output/ministikwan_lake_cree_nation_2024.json',
-        'data/output/mishkeegogamang_first_nation_2020.json',
-        'data/output/mishkeegogamang_first_nation_2021.json',
-        'data/output/mishkeegogamang_first_nation_2022.json',
-        'data/output/mishkeegogamang_first_nation_2023.json',
-        'data/output/mishkeegogamang_first_nation_2024.json',
-        'data/output/misipawistik_cree_nation_2020.json',
-        'data/output/misipawistik_cree_nation_2021.json',
-        'data/output/misipawistik_cree_nation_2022.json',
-        'data/output/misipawistik_cree_nation_2023.json',
-        'data/output/misipawistik_cree_nation_2024.json',
-        'data/output/missanabie_cree_first_nation_2020.json',
-        'data/output/missanabie_cree_first_nation_2021.json',
-        'data/output/mississauga_first_nation_2020.json',
-        'data/output/mississauga_first_nation_2021.json',
-        'data/output/mississauga_first_nation_2022.json',
-        'data/output/mississauga_first_nation_2023.json',
-        'data/output/mississauga_first_nation_2024.json',
-        'data/output/mississaugas_of_scugog_island_first_nation_2021.json',
-        'data/output/mississaugas_of_scugog_island_first_nation_2022.json',
-        'data/output/mississaugas_of_scugog_island_first_nation_2023.json',
-        'data/output/mississaugas_of_scugog_island_first_nation_2024.json',
-        'data/output/mississaugas_of_the_credit_first_nation_2021.json',
-        'data/output/mississaugas_of_the_credit_first_nation_2022.json',
-        'data/output/mississaugas_of_the_credit_first_nation_2023.json',
-        'data/output/mississaugas_of_the_credit_first_nation_2024.json',
-        'data/output/mistawasis_nehiyawak_#103_2020.json',
-        'data/output/mistawasis_nêhiyawak_#103_2024.json',
-        'data/output/mitaanjigamiing_first_nation_2021.json',
-        'data/output/mitaanjigamiing_first_nation_2022.json',
-        'data/output/mitaanjigamiing_first_nation_2023.json',
-        'data/output/mitaanjigamiing_first_nation_2024.json',
-        'data/output/mohawk_council_of_akwesasne_2020.json',
-        'data/output/mohawk_council_of_akwesasne_2021.json',
-        'data/output/mohawk_council_of_akwesasne_2022.json',
-        'data/output/mohawk_council_of_akwesasne_2023.json',
-        'data/output/mohawk_council_of_akwesasne_2024.json',
-        'data/output/mohawk_council_of_kanesatake_2020.json',
-        'data/output/mohawk_council_of_kanesatake_2021.json',
-        'data/output/mohawk_council_of_kanesatake_2022.json',
-        'data/output/mohawk_council_of_kanesatake_2023.json',
-        'data/output/mohawk_council_of_kanesatake_2024.json',
-        'data/output/mohawks_of_the_bay_of_quinte_2020.json',
-        'data/output/mohawks_of_the_bay_of_quinte_2021.json',
-        'data/output/mohawks_of_the_bay_of_quinte_2022.json',
-        'data/output/mohawks_of_the_bay_of_quinte_2023.json',
-        'data/output/mohawks_of_the_bay_of_quinte_2024.json',
-        'data/output/montana_first_nation_2020.json',
-        'data/output/montana_first_nation_2021.json',
-        'data/output/montana_first_nation_2022.json',
-        'data/output/montana_first_nation_2023.json',
-        'data/output/montana_first_nation_2024.json',
-        'data/output/montreal_lake_cree_nation_2021.json',
-        'data/output/montreal_lake_cree_nation_2022.json',
-        'data/output/montreal_lake_cree_nation_2023.json',
-        'data/output/montreal_lake_cree_nation_2024.json',
-        'data/output/moose_cree_first_nation_2020.json',
-        'data/output/moose_cree_first_nation_2021.json',
-        'data/output/moose_cree_first_nation_2022.json',
-        'data/output/moose_cree_first_nation_2023.json',
-        'data/output/moose_deer_point_first_nation_2021.json',
-        'data/output/moose_deer_point_first_nation_2022.json',
-        'data/output/moose_deer_point_first_nation_2023.json',
-        'data/output/moose_deer_point_first_nation_2024.json',
-        'data/output/moosomin_first_nation_2020.json',
-        'data/output/moosomin_first_nation_2021.json',
-        'data/output/moosomin_first_nation_2022.json',
-        'data/output/moosomin_first_nation_2023.json',
-        'data/output/moosomin_first_nation_2024.json',
-        'data/output/moravian_of_the_thames_first_nation_2020.json',
-        'data/output/moravian_of_the_thames_first_nation_2021.json',
-        'data/output/moravian_of_the_thames_first_nation_2022.json',
-        'data/output/moravian_of_the_thames_first_nation_2023.json',
-        'data/output/mosakahiken_cree_nation_2020.json',
-        'data/output/mosakahiken_cree_nation_2021.json',
-        'data/output/mosakahiken_cree_nation_2022.json',
-        'data/output/mosquito,_grizzly_bears_head,_lean_man_first_nation_2020.json',
-        'data/output/mosquito_grizzly_bears_head_lean_man_first_nation_2021.json',
-        'data/output/mosquito_grizzly_bears_head_lean_man_first_nation_2022.json',
-        'data/output/mosquito_grizzly_bears_head_lean_man_first_nation_2023.json',
-        'data/output/mosquito_grizzly_bears_head_lean_man_first_nation_2024.json',
-        'data/output/mowachaht_muchalaht_first_nation_2020.json',
-        'data/output/mowachaht_muchalaht_first_nation_2022.json',
-        'data/output/mowachaht_muchalaht_first_nation_2023.json',
-        'data/output/mowachaht_muchalaht_first_nation_2024.json',
-        'data/output/munsee-delaware_nation_2020.json',
-        'data/output/munsee-delaware_nation_2021.json',
-        'data/output/munsee-delaware_nation_2022.json',
-        'data/output/munsee-delaware_nation_2023.json',
-        'data/output/munsee-delaware_nation_2024.json',
-        'data/output/muscowpetung_first_nation_2020.json',
-        'data/output/muscowpetung_first_nation_2021.json',
-        'data/output/muscowpetung_saulteaux_nation_2022.json',
-        'data/output/muscowpetung_saulteaux_nation_2023.json',
-        'data/output/muscowpetung_saulteaux_nation_2024.json',
-        'data/output/mushuau_innu_first_nation_2021.json',
-        'data/output/mushuau_innu_first_nation_2022.json',
-        'data/output/mushuau_innu_first_nation_2023.json',
-        'data/output/muskeg_lake_cree_nation_2020.json',
-        'data/output/muskeg_lake_cree_nation_2021.json',
-        'data/output/muskeg_lake_cree_nation_2022.json',
-        'data/output/muskoday_first_nation_2022.json',
-        'data/output/muskoday_first_nation_2023.json',
-        'data/output/muskoday_first_nation_2024.json',
-        'data/output/muskowekwan_first_nation_2020.json',
-        'data/output/muskowekwan_first_nation_2021.json',
-        'data/output/muskowekwan_first_nation_2022.json',
-        'data/output/muskowekwan_first_nation_2023.json',
-        'data/output/muskowekwan_first_nation_2024.json',
-        'data/output/muskrat_dam_first_nation_2020.json',
-        'data/output/muskrat_dam_first_nation_2021.json',
-        'data/output/muskrat_dam_first_nation_2022.json',
-        'data/output/muskrat_dam_first_nation_2023.json',
-        'data/output/muskrat_dam_first_nation_2024.json',
-        'data/output/musqueam_indian_band_2020.json',
-        'data/output/musqueam_indian_band_2021.json',
-        'data/output/musqueam_indian_band_2022.json',
-        'data/output/musqueam_indian_band_2023.json',
-        'data/output/musqueam_indian_band_2024.json',
-        'data/output/nadleh_whuten_indian_band_2020.json',
-        'data/output/nadleh_whuten_indian_band_2021.json',
-        'data/output/nadleh_whuten_indian_band_2022.json',
-        'data/output/nadleh_whuten_indian_band_2023.json',
-        'data/output/nadleh_whuten_indian_band_2024.json',
-        'data/output/nahanni_butte_dene_band_2020.json',
-        'data/output/nahanni_butte_dene_band_2021.json',
-        'data/output/nahanni_butte_dene_band_2024.json',
-        'data/output/naicatchewenin_first_nation_2021.json',
-        'data/output/naicatchewenin_first_nation_2022.json',
-        'data/output/naicatchewenin_first_nation_2023.json',
-        'data/output/nakazdli_whuten_2020.json',
-        'data/output/nakazdli_whuten_2021.json',
-        'data/output/nakazdli_whuten_2022.json',
-        'data/output/nakazdli_whuten_2023.json',
-        'data/output/nakazdli_whuten_2024.json',
-        'data/output/namgis_first_nation_2020.json',
-        'data/output/namgis_first_nation_2021.json',
-        'data/output/namgis_first_nation_2022.json',
-        'data/output/namgis_first_nation_2023.json',
-        'data/output/namgis_first_nation_2024.json',
-        'data/output/nanoose_first_nation_2020.json',
-        'data/output/nanoose_first_nation_2021.json',
-        'data/output/nanoose_first_nation_2022.json',
-        'data/output/nanoose_first_nation_2023.json',
-        'data/output/nanoose_first_nation_2024.json',
-        'data/output/naotkamegwanning_first_nation_2020.json',
-        'data/output/naotkamegwanning_first_nation_2021.json',
-        'data/output/naotkamegwanning_first_nation_2022.json',
-        'data/output/naotkamegwanning_first_nation_2023.json',
-        'data/output/naotkamegwanning_first_nation_2024.json',
-        'data/output/nation_anishnabe_du_lac_simon_2020.json',
-        'data/output/nation_anishnabe_du_lac_simon_2021.json',
-        'data/output/nation_anishnabe_du_lac_simon_2022.json',
-        'data/output/nation_anishnabe_du_lac_simon_2023.json',
-        'data/output/nation_anishnabe_du_lac_simon_2024.json',
-        'data/output/nation_huronne-wendat_2020.json',
-        'data/output/nation_huronne-wendat_2021.json',
-        'data/output/nation_huronne-wendat_2022.json',
-        'data/output/nation_huronne-wendat_2023.json',
-        'data/output/nation_huronne-wendat_2024.json',
-        'data/output/nation_micmac_de_gespeg_2020.json',
-        'data/output/nation_micmac_de_gespeg_2021.json',
-        'data/output/nation_micmac_de_gespeg_2022.json',
-        'data/output/nation_micmac_de_gespeg_2023.json',
-        'data/output/nation_micmac_de_gespeg_2024.json',
-        'data/output/natoaganeg_first_nation_2023.json',
-        'data/output/natoaganeg_first_nation_2024.json',
-        'data/output/nazko_first_nation_2020.json',
-        'data/output/nazko_first_nation_2021.json',
-        'data/output/nazko_first_nation_2023.json',
-        'data/output/nazko_first_nation_2024.json',
-        'data/output/nekaneet_first_nation_2020.json',
-        'data/output/nekaneet_first_nation_2021.json',
-        'data/output/nekaneet_first_nation_2022.json',
-        'data/output/nekaneet_first_nation_2023.json',
-        'data/output/nekaneet_first_nation_2024.json',
-        'data/output/neskantaga_first_nation_2020.json',
-        'data/output/neskantaga_first_nation_2021.json',
-        'data/output/neskantaga_first_nation_2022.json',
-        'data/output/neskantaga_first_nation_2023.json',
-        'data/output/neskonlith_indian_band_2020.json',
-        'data/output/neskonlith_indian_band_2021.json',
-        'data/output/neskonlith_indian_band_2022.json',
-        'data/output/neskonlith_indian_band_2023.json',
-        'data/output/neskonlith_indian_band_2024.json',
-        'data/output/netmizaaggamig_nishnaabeg_2022.json',
-        'data/output/netmizaaggamig_nishnaabeg_2023.json',
-        'data/output/new_westminster_indian_band_2020.json',
-        'data/output/new_westminster_indian_band_2021.json',
-        'data/output/new_westminster_indian_band_2022.json',
-        'data/output/new_westminster_indian_band_2023.json',
-        'data/output/nibinamik_first_nation_2020.json',
-        'data/output/nibinamik_first_nation_2021.json',
-        'data/output/nibinamik_first_nation_2022.json',
-        'data/output/nicomen_indian_band_2020.json',
-        'data/output/nicomen_indian_band_2021.json',
-        'data/output/nigigoonsiminikaaning_first_nation_2022.json',
-        'data/output/nigigoonsiminikaaning_first_nation_2023.json',
-        'data/output/niisaachewan_anishinaabe_nation_2021.json',
-        'data/output/niisaachewan_anishinaabe_nation_2022.json',
-        'data/output/niisaachewan_anishinaabe_nation_2023.json',
-        'data/output/nipissing_first_nation_2020.json',
-        'data/output/nipissing_first_nation_2021.json',
-        'data/output/nipissing_first_nation_2022.json',
-        'data/output/nipissing_first_nation_2023.json',
-        'data/output/nipissing_first_nation_2024.json',
-        'data/output/nisichawayasihk_cree_nation_2020.json',
-        'data/output/nisichawayasihk_cree_nation_2021.json',
-        'data/output/nisichawayasihk_cree_nation_2022.json',
-        'data/output/nisichawayasihk_cree_nation_2023.json',
-        'data/output/nisichawayasihk_cree_nation_2024.json',
-        'data/output/nooaitch_indian_band_2020.json',
-        'data/output/nooaitch_indian_band_2021.json',
-        'data/output/nooaitch_indian_band_2022.json',
-        'data/output/north_spirit_lake_first_nation_2020.json',
-        'data/output/northlands_denesuline_first_nation_2020.json',
-        'data/output/northlands_denesuline_first_nation_2021.json',
-        'data/output/northwest_angle_#33_first_nation_2020.json',
-        'data/output/northwest_angle_#33_first_nation_2021.json',
-        'data/output/northwest_angle_#33_first_nation_2022.json',
-        'data/output/northwest_angle_#33_first_nation_2023.json',
-        'data/output/northwest_angle_#33_first_nation_2024.json',
-        'data/output/norway_house_cree_nation_2020.json',
-        'data/output/norway_house_cree_nation_2021.json',
-        'data/output/norway_house_cree_nation_2022.json',
-        'data/output/norway_house_cree_nation_2023.json',
-        'data/output/norway_house_cree_nation_2024.json',
-        'data/output/nquatqua_first_nation_2020.json',
-        'data/output/nquatqua_first_nation_2021.json',
-        'data/output/nquatqua_first_nation_2022.json',
-        'data/output/nquatqua_first_nation_2023.json',
-        'data/output/nquatqua_first_nation_2024.json',
-        'data/output/nuchatlaht_first_nation_2020.json',
-        'data/output/nuchatlaht_first_nation_2021.json',
-        'data/output/nuchatlaht_first_nation_2022.json',
-        'data/output/nuchatlaht_first_nation_2023.json',
-        'data/output/nuxalk_nation_2020.json',
-        'data/output/nuxalk_nation_2021.json',
-        'data/output/nuxalk_nation_2022.json',
-        'data/output/nuxalk_nation_2023.json',
-        'data/output/nuxalk_nation_2024.json',
-        'data/output/o-pipon-na-piwin_cree_nation_2020.json',
-        'data/output/ocean_man_first_nation_#69_2020.json',
-        'data/output/ocean_man_first_nation_2022.json',
-        'data/output/ochiese_first_nation_2020.json',
-        'data/output/ochiese_first_nation_2021.json',
-        'data/output/ochiese_first_nation_2022.json',
-        'data/output/ochiese_first_nation_2023.json',
-        'data/output/ochiese_first_nation_2024.json',
-        'data/output/ojibway_nation_of_saugeen_2024.json',
-        'data/output/ojibways_of_onigaming_first_nation_2021.json',
-        'data/output/ojibways_of_onigaming_first_nation_2022.json',
-        'data/output/ojibways_of_onigaming_first_nation_2023.json',
-        'data/output/ojibways_of_onigaming_first_nation_2024.json',
-        'data/output/okanagan_indian_band_2020.json',
-        'data/output/okanagan_indian_band_2021.json',
-        'data/output/okanagan_indian_band_2022.json',
-        'data/output/okanagan_indian_band_2023.json',
-        'data/output/okanagan_indian_band_2024.json',
-        'data/output/okanese_first_nation_2020.json',
-        'data/output/okanese_first_nation_2021.json',
-        'data/output/okanese_first_nation_2022.json',
-        'data/output/okanese_first_nation_2023.json',
-        'data/output/okanese_first_nation_2024.json',
-        'data/output/old_massett_village_council_2020.json',
-        'data/output/old_massett_village_council_2021.json',
-        'data/output/old_massett_village_council_2022.json',
-        'data/output/old_massett_village_council_2023.json',
-        'data/output/old_massett_village_council_2024.json',
-        'data/output/one_arrow_first_nation_2020.json',
-        'data/output/one_arrow_first_nation_2021.json',
-        'data/output/one_arrow_first_nation_2022.json',
-        'data/output/one_arrow_first_nation_2024.json',
-        'data/output/oneida_nation_of_the_thames_2020.json',
-        'data/output/oneida_nation_of_the_thames_2021.json',
-        'data/output/oneida_nation_of_the_thames_2022.json',
-        'data/output/oneida_nation_of_the_thames_2023.json',
-        'data/output/opaskwayak_cree_nation_2020.json',
-        'data/output/opaskwayak_cree_nation_2021.json',
-        'data/output/opaskwayak_cree_nation_2022.json',
-        'data/output/opaskwayak_cree_nation_2023.json',
-        'data/output/oregon_jack_creek_band_2020.json',
-        'data/output/oregon_jack_creek_band_2021.json',
-        'data/output/oregon_jack_creek_band_2022.json',
-        'data/output/oregon_jack_creek_band_2023.json',
-        'data/output/oromocto_first_nation_2021.json',
-        'data/output/oromocto_first_nation_2022.json',
-        'data/output/oromocto_first_nation_2023.json',
-        'data/output/oromocto_first_nation_2024.json',
-        'data/output/osoyoos_indian_band_2020.json',
-        'data/output/osoyoos_indian_band_2021.json',
-        'data/output/osoyoos_indian_band_2022.json',
-        'data/output/osoyoos_indian_band_2023.json',
-        'data/output/pabineau_first_nation_2021.json',
-        'data/output/pabineau_first_nation_2022.json',
-        'data/output/pabineau_first_nation_2023.json',
-        'data/output/pabineau_first_nation_2024.json',
-        'data/output/pacheedaht_first_nation_2020.json',
-        'data/output/pacheedaht_first_nation_2021.json',
-        'data/output/pacheedaht_first_nation_2022.json',
-        'data/output/paqtnkek_mikmaw_nation_2020.json',
-        'data/output/paqtnkek_mikmaw_nation_2021.json',
-        'data/output/paqtnkek_mikmaw_nation_2022.json',
-        'data/output/paqtnkek_mikmaw_nation_2023.json',
-        'data/output/paqtnkek_mikmaw_nation_2024.json',
-        'data/output/pasqua_first_nation_2020.json',
-        'data/output/pasqua_first_nation_2021.json',
-        'data/output/pasqua_first_nation_2022.json',
-        'data/output/pasqua_first_nation_2023.json',
-        'data/output/pauingassi_first_nation_2021.json',
-        'data/output/pauingassi_first_nation_2022.json',
-        'data/output/pauingassi_first_nation_2023.json',
-        'data/output/pauingassi_first_nation_2024.json',
-        'data/output/paul_first_nation_2020.json',
-        'data/output/paul_first_nation_2021.json',
-        'data/output/paul_first_nation_2022.json',
-        'data/output/paul_first_nation_2023.json',
-        'data/output/paul_first_nation_2024.json',
-        'data/output/pauquachin_first_nation_2020.json',
-        'data/output/pauquachin_first_nation_2021.json',
-        'data/output/pauquachin_first_nation_2022.json',
-        'data/output/pauquachin_first_nation_2023.json',
-        'data/output/pauquachin_first_nation_2024.json',
-        'data/output/peguis_first_nation_2021.json',
-        'data/output/peguis_first_nation_2022.json',
-        'data/output/peguis_first_nation_2023.json',
-        'data/output/peguis_first_nation_2024.json',
-        'data/output/pehdzeh_ki_first_nation_2020.json',
-        'data/output/pehdzeh_ki_first_nation_2021.json',
-        'data/output/pehdzeh_ki_first_nation_2024.json',
-        'data/output/pekuakamiulnuatsh_takuhikan_2020.json',
-        'data/output/pekuakamiulnuatsh_takuhikan_2021.json',
-        'data/output/pekuakamiulnuatsh_takuhikan_2023.json',
-        'data/output/pekuakamiulnuatsh_takuhikan_2024.json',
-        'data/output/pelican_lake_first_nation_2020.json',
-        'data/output/penelakut_tribe_2020.json',
-        'data/output/penelakut_tribe_2021.json',
-        'data/output/penelakut_tribe_2022.json',
-        'data/output/penelakut_tribe_2023.json',
-        'data/output/penelakut_tribe_2024.json',
-        'data/output/penticton_indian_band_2020.json',
-        'data/output/penticton_indian_band_2021.json',
-        'data/output/penticton_indian_band_2022.json',
-        'data/output/penticton_indian_band_2023.json',
-        'data/output/penticton_indian_band_2024.json',
-        'data/output/peters_first_nation_2020.json',
-        'data/output/peters_first_nation_2021.json',
-        'data/output/peters_first_nation_2022.json',
-        'data/output/peters_first_nation_2023.json',
-        'data/output/peters_first_nation_2024.json',
-        'data/output/pheasant_rump_nakota_first_nation_#68_2020.json',
-        'data/output/pheasant_rump_nakota_first_nation_#68_2021.json',
-        'data/output/pheasant_rump_nakota_first_nation_#68_2022.json',
-        'data/output/pheasant_rump_nakota_first_nation_#68_2023.json',
-        'data/output/pheasant_rump_nakota_first_nation_#68_2024.json',
-        'data/output/piapot_first_nation_2020.json',
-        'data/output/piapot_first_nation_2021.json',
-        'data/output/piapot_first_nation_2022.json',
-        'data/output/piapot_first_nation_2023.json',
-        'data/output/piapot_first_nation_2024.json',
-        'data/output/pic_mobert_first_nation_2020.json',
-        'data/output/pic_mobert_first_nation_2021.json',
-        'data/output/pictou_landing_band_council_.json',
-        'data/output/pictou_landing_band_council_2020.json',
-        'data/output/pictou_landing_band_council_2021.json',
-        'data/output/pictou_landing_band_council_2022.json',
-        'data/output/pictou_landing_band_council_2023.json',
-        'data/output/pictou_landing_band_council_2024.json',
-        'data/output/piikani_nation_2020.json',
-        'data/output/piikani_nation_2021.json',
-        'data/output/piikani_nation_2022.json',
-        'data/output/pikangikum_first_nation_2020.json',
-        'data/output/pikangikum_first_nation_2021.json',
-        'data/output/pikangikum_first_nation_2022.json',
-        'data/output/pikangikum_first_nation_2023.json',
-        'data/output/pikangikum_first_nation_2024.json',
-        'data/output/pinaymootang_first_nation_2020.json',
-        'data/output/pinaymootang_first_nation_2021.json',
-        'data/output/pinaymootang_first_nation_2022.json',
-        'data/output/pinaymootang_first_nation_2023.json',
-        'data/output/pinaymootang_first_nation_2024.json',
-        'data/output/pine_creek_first_nation_2020.json',
-        'data/output/pine_creek_first_nation_2021.json',
-        'data/output/pine_creek_first_nation_2022.json',
-        'data/output/pine_creek_first_nation_2023.json',
-        'data/output/poplar_hill_first_nation_2020.json',
-        'data/output/poplar_hill_first_nation_2021.json',
-        'data/output/poplar_river_first_nation_2020.json',
-        'data/output/potlotek_first_nation_2020.json',
-        'data/output/potlotek_first_nation_2021.json',
-        'data/output/poundmaker_cree_nation_2020.json',
-        'data/output/poundmaker_cree_nation_2021.json',
-        'data/output/poundmaker_cree_nation_2022.json',
-        'data/output/poundmaker_cree_nation_2023.json',
-        'data/output/poundmaker_cree_nation_2024.json',
-        'data/output/première_nation_des_innus_de_nutashkuan_2020.json',
-        'data/output/première_nation_des_innus_de_nutashkuan_2021.json',
-        'data/output/première_nation_des_innus_de_nutashkuan_2023.json',
-        'data/output/première_nation_des_innus_de_nutashkuan_2024.json',
-        'data/output/première_nation_wolastoqiyik_wahsipekuk_2020.json',
-        'data/output/première_nation_wolastoqiyik_wahsipekuk_2021.json',
-        'data/output/première_nation_wolastoqiyik_wahsipekuk_2022.json',
-        'data/output/première_nation_wolastoqiyik_wahsipekuk_2023.json',
-        'data/output/première_nation_wolastoqiyik_wahsipekuk_2024.json',
-        'data/output/prophet_river_first_nation_2020.json',
-        'data/output/prophet_river_first_nation_2021.json',
-        'data/output/prophet_river_first_nation_2022.json',
-        'data/output/prophet_river_first_nation_2023.json',
-        'data/output/qalipu_first_nation_2020.json',
-        'data/output/qalipu_first_nation_2021.json',
-        'data/output/qalipu_first_nation_2023.json',
-        'data/output/quatsino_first_nation_2020.json',
-        'data/output/quatsino_first_nation_2021.json',
-        'data/output/quatsino_first_nation_2022.json',
-        'data/output/quatsino_first_nation_2023.json',
-        'data/output/quatsino_first_nation_2024.json',
-        'data/output/rainy_river_first_nations_2021.json',
-        'data/output/rainy_river_first_nations_2022.json',
-        'data/output/rainy_river_first_nations_2023.json',
-        'data/output/red_earth_cree_nation_2020.json',
-        'data/output/red_earth_cree_nation_2021.json',
-        'data/output/red_earth_cree_nation_2022.json',
-        'data/output/red_earth_cree_nation_2023.json',
-        'data/output/red_earth_cree_nation_2024.json',
-        'data/output/red_pheasant_cree_nation_2020.json',
-        'data/output/red_pheasant_cree_nation_2021.json',
-        'data/output/red_pheasant_cree_nation_2022.json',
-        'data/output/red_pheasant_cree_nation_2023.json',
-        'data/output/red_pheasant_cree_nation_2024.json',
-        'data/output/red_rock_indian_band_2020.json',
-        'data/output/red_rock_indian_band_2021.json',
-        'data/output/red_rock_indian_band_2022.json',
-        'data/output/red_rock_indian_band_2023.json',
-        'data/output/red_rock_indian_band_2024.json',
-        'data/output/red_sucker_lake_first_nation_2020.json',
-        'data/output/red_sucker_lake_first_nation_2021.json',
-        'data/output/red_sucker_lake_first_nation_2022.json',
-        'data/output/rolling_river_first_nation_2020.json',
-        'data/output/rolling_river_first_nation_2021.json',
-        'data/output/rolling_river_first_nation_2022.json',
-        'data/output/rolling_river_first_nation_2023.json',
-        'data/output/rolling_river_first_nation_2024.json',
-        'data/output/roseau_river_anishinabe_first_nation_2020.json',
-        'data/output/roseau_river_anishinabe_first_nation_2021.json',
-        'data/output/roseau_river_anishinabe_first_nation_2022.json',
-        'data/output/roseau_river_anishinabe_first_nation_2023.json',
-        'data/output/ross_river_dena_council_2020.json',
-        'data/output/ross_river_dena_council_2021.json',
-        'data/output/ross_river_dena_council_2022.json',
-        'data/output/sachigo_lake_first_nation_2020.json',
-        'data/output/sachigo_lake_first_nation_2021.json',
-        'data/output/sachigo_lake_first_nation_2022.json',
-        'data/output/saddle_lake_cree_nation_2021.json',
-        'data/output/saddle_lake_cree_nation_2022.json',
-        'data/output/saddle_lake_cree_nation_2023.json',
-        'data/output/saddle_lake_cree_nation_2024.json',
-        'data/output/sagamok_anishnawbek_2020.json',
-        'data/output/sagamok_anishnawbek_2021.json',
-        'data/output/sagamok_anishnawbek_2022.json',
-        'data/output/sagamok_anishnawbek_2023.json',
-        'data/output/sagamok_anishnawbek_first_nation_2024.json',
-        'data/output/saikuz_first_nation_2020.json',
-        'data/output/saikuz_first_nation_2021.json',
-        'data/output/saikuz_first_nation_2022.json',
-        'data/output/saikuz_first_nation_2023.json',
-        'data/output/saikuz_first_nation_2024.json',
-        'data/output/saint_marys_first_nation_2020.json',
-        'data/output/saint_marys_first_nation_2021.json',
-        'data/output/saint_marys_first_nation_2022.json',
-        'data/output/saint_marys_first_nation_2023.json',
-        'data/output/saint_marys_first_nation_2024.json',
-        'data/output/salt_river_first_nation_2020.json',
-        'data/output/salt_river_first_nation_2021.json',
-        'data/output/salt_river_first_nation_2023.json',
-        'data/output/samahquam_2020.json',
-        'data/output/samahquam_2021.json',
-        'data/output/samahquam_2022.json',
-        'data/output/sambaa_ke_first_nation_2020.json',
-        'data/output/sambaa_ke_first_nation_2021.json',
-        'data/output/sambaa_ke_first_nation_2023.json',
-        'data/output/sambaa_ke_first_nation_2024.json',
-        'data/output/samson_cree_nation_2020.json',
-        'data/output/samson_cree_nation_2021.json',
-        'data/output/samson_cree_nation_2022.json',
-        'data/output/samson_cree_nation_2023.json',
-        'data/output/samson_cree_nation_2024.json',
-        'data/output/sandy_bay_ojibway_first_nation_2020.json',
-        'data/output/sandy_bay_ojibway_first_nation_2021.json',
-        'data/output/sandy_bay_ojibway_first_nation_2022.json',
-        'data/output/sandy_lake_first_nation_2020.json',
-        'data/output/sandy_lake_first_nation_2021.json',
-        'data/output/sapotaweyak_cree_nation_2020.json',
-        'data/output/sapotaweyak_cree_nation_2021.json',
-        'data/output/sapotaweyak_cree_nation_2022.json',
-        'data/output/sapotaweyak_cree_nation_2023.json',
-        'data/output/sapotaweyak_cree_nation_2024.json',
-        'data/output/saulteau_first_nations_2020.json',
-        'data/output/saulteau_first_nations_2021.json',
-        'data/output/saulteau_first_nations_2022.json',
-        'data/output/saulteau_first_nations_2023.json',
-        'data/output/saulteau_first_nations_2024.json',
-        'data/output/saulteaux_first_nation_2021.json',
-        'data/output/seabird_island_band_2020.json',
-        'data/output/seabird_island_band_2021.json',
-        'data/output/seabird_island_band_2022.json',
-        'data/output/seabird_island_band_2023.json',
-        'data/output/seabird_island_band_2024.json',
-        'data/output/seine_river_first_nation_2021.json',
-        'data/output/seine_river_first_nation_2022.json',
-        'data/output/semiahmoo_first_nation_2020.json',
-        'data/output/serpent_river_first_nation_2020.json',
-        'data/output/serpent_river_first_nation_2021.json',
-        'data/output/serpent_river_first_nation_2022.json',
-        'data/output/serpent_river_first_nation_2023.json',
-        'data/output/serpent_river_first_nation_2024.json',
-        'data/output/shackan_indian_band_2020.json',
-        'data/output/shackan_indian_band_2021.json',
-        'data/output/shackan_indian_band_2022.json',
-        'data/output/shackan_indian_band_2023.json',
-        'data/output/shackan_indian_band_2024.json',
-        'data/output/shamattawa_first_nation_2020.json',
-        'data/output/shamattawa_first_nation_2021.json',
-        'data/output/shamattawa_first_nation_2022.json',
-        'data/output/shawanaga_first_nation_2021.json',
-        'data/output/shawanaga_first_nation_2022.json',
-        'data/output/shawanaga_first_nation_2023.json',
-        'data/output/shawanaga_first_nation_2024.json',
-        'data/output/sheguiandah_first_nation_2020.json',
-        'data/output/sheguiandah_first_nation_2021.json',
-        'data/output/sheguiandah_first_nation_2022.json',
-        'data/output/sheshatshiu_innu_first_nation_2020.json',
-        'data/output/sheshatshiu_innu_first_nation_2021.json',
-        'data/output/sheshatshiu_innu_first_nation_2022.json',
-        'data/output/sheshatshiu_innu_first_nation_2023.json',
-        'data/output/sheshatshiu_innu_first_nation_2024.json',
-        'data/output/sheshegwaning_first_nation_2020.json',
-        'data/output/sheshegwaning_first_nation_2021.json',
-        'data/output/sheshegwaning_first_nation_2022.json',
-        'data/output/sheshegwaning_first_nation_2023.json',
-        'data/output/sheshegwaning_first_nation_2024.json',
-        'data/output/shoal_lake_#40_first_nation_2023.json',
-        'data/output/shoal_lake_40_first_nation_2021.json',
-        'data/output/shoal_lake_40_first_nation_2022.json',
-        'data/output/shoal_lake_40_first_nation_2024.json',
-        'data/output/shoal_lake_cree_nation_2020.json',
-        'data/output/shoal_lake_cree_nation_2021.json',
-        'data/output/shoal_lake_cree_nation_2022.json',
-        'data/output/shoal_lake_cree_nation_2023.json',
-        'data/output/shoal_lake_cree_nation_2024.json',
-        'data/output/shuswap_band_2022.json',
-        'data/output/shuswap_band_2023.json',
-        'data/output/shuswap_band_2024.json',
-        'data/output/shuswap_indian_band_2020.json',
-        'data/output/shuswap_indian_band_2021.json',
-        'data/output/shxwowhamel_first_nation_2020.json',
-        'data/output/shxwowhamel_first_nation_2021.json',
-        'data/output/shxwowhamel_first_nation_2022.json',
-        'data/output/shxwowhamel_first_nation_2023.json',
-        'data/output/siksika_nation_2020.json',
-        'data/output/siksika_nation_2021.json',
-        'data/output/simpcw_first_nation_2020.json',
-        'data/output/simpcw_first_nation_2021.json',
-        'data/output/simpcw_first_nation_2022.json',
-        'data/output/simpcw_first_nation_2023.json',
-        'data/output/simpcw_first_nation_2024.json',
-        'data/output/sioux_valley_dakota_nation_2023.json',
-        'data/output/sioux_valley_dakota_nation_2024.json',
-        'data/output/sipeknekatik_2020.json',
-        'data/output/sipeknekatik_2021.json',
-        'data/output/sipeknekatik_2022.json',
-        'data/output/sipeknekatik_2023.json',
-        'data/output/sipeknekatik_2024.json',
-        'data/output/siska_indian_band_2020.json',
-        'data/output/siska_indian_band_2021.json',
-        'data/output/siska_indian_band_2023.json',
-        'data/output/six_nations_of_the_grand_river_2023.json',
-        'data/output/six_nations_of_the_grand_river_2024.json',
-        'data/output/skatin_nations_2020.json',
-        'data/output/skatin_nations_2021.json',
-        'data/output/skatin_nations_2022.json',
-        'data/output/skatin_nations_2023.json',
-        'data/output/skatin_nations_2024.json',
-        'data/output/skawahlook_first_nation_2020.json',
-        'data/output/skawahlook_first_nation_2021.json',
-        'data/output/skawahlook_first_nation_2022.json',
-        'data/output/skawahlook_first_nation_2023.json',
-        'data/output/skawahlook_first_nation_2024.json',
-        'data/output/skeetchestn_indian_band_2020.json',
-        'data/output/skeetchestn_indian_band_2021.json',
-        'data/output/skeetchestn_indian_band_2022.json',
-        'data/output/skeetchestn_indian_band_2023.json',
-        'data/output/skeetchestn_indian_band_2024.json',
-        'data/output/skidegate_band_council_2020.json',
-        'data/output/skidegate_band_council_2021.json',
-        'data/output/skidegate_band_council_2022.json',
-        'data/output/skidegate_band_council_2023.json',
-        'data/output/skidegate_band_council_2024.json',
-        'data/output/skin_tyee_nation_2020.json',
-        'data/output/skin_tyee_nation_2021.json',
-        'data/output/skowkale_first_nation_2020.json',
-        'data/output/skowkale_first_nation_2021.json',
-        'data/output/skowkale_first_nation_2022.json',
-        'data/output/skowkale_first_nation_2023.json',
-        'data/output/skowkale_first_nation_2024.json',
-        'data/output/skownan_first_nation_2020.json',
-        'data/output/skownan_first_nation_2021.json',
-        'data/output/skownan_first_nation_2022.json',
-        'data/output/skownan_first_nation_2023.json',
-        'data/output/skwah_first_nation_2020.json',
-        'data/output/skwah_first_nation_2021.json',
-        'data/output/skwah_first_nation_2022.json',
-        'data/output/skwah_first_nation_2023.json',
-        'data/output/skwah_first_nation_2024.json',
-        'data/output/skwlax_te_secwepemculecw_2023.json',
-        'data/output/skwlax_te_secwepemculecw_2024.json',
-        'data/output/skwlax_te_secwepemculew_2022.json',
-        'data/output/slate_falls_nation_2020.json',
-        'data/output/smiths_landing_first_nation_#196_2020.json',
-        'data/output/smiths_landing_first_nation_#196_2021.json',
-        'data/output/smiths_landing_first_nation_#196_2022.json',
-        'data/output/smiths_landing_first_nation_#196_2023.json',
-        'data/output/smiths_landing_first_nation_#196_2024.json',
-        'data/output/snuneymuxw_first_nation_2020.json',
-        'data/output/snuneymuxw_first_nation_2021.json',
-        'data/output/snuneymuxw_first_nation_2022.json',
-        'data/output/snuneymuxw_first_nation_2023.json',
-        'data/output/snuneymuxw_first_nation_2024.json',
-        'data/output/soda_creek_indian_band_2020.json',
-        'data/output/songhees_nation_2020.json',
-        'data/output/songhees_nation_2021.json',
-        'data/output/songhees_nation_2022.json',
-        'data/output/songhees_nation_2023.json',
-        'data/output/songhees_nation_2024.json',
-        'data/output/soowahlie_first_nation_2020.json',
-        'data/output/soowahlie_first_nation_2021.json',
-        'data/output/soowahlie_first_nation_2022.json',
-        'data/output/soowahlie_first_nation_2023.json',
-        'data/output/splatsin_2020.json',
-        'data/output/splatsin_2021.json',
-        'data/output/splatsin_2022.json',
-        'data/output/splatsin_2024.json',
-        'data/output/spuzzum_first_nation_2020.json',
-        'data/output/spuzzum_first_nation_2021.json',
-        'data/output/spuzzum_first_nation_2023.json',
-        'data/output/spuzzum_first_nation_2024.json',
-        'data/output/squamish_nation_2020.json',
-        'data/output/squamish_nation_2021.json',
-        'data/output/squamish_nation_2022.json',
-        'data/output/squamish_nation_2023.json',
-        'data/output/squamish_nation_2024.json',
-        'data/output/squiala_first_nation_2020.json',
-        'data/output/squiala_first_nation_2021.json',
-        'data/output/squiala_first_nation_2022.json',
-        'data/output/squiala_first_nation_2023.json',
-        'data/output/squiala_first_nation_2024.json',
-        'data/output/st._theresa_point_first_nation_2020.json',
-        'data/output/st._theresa_point_first_nation_2023.json',
-        'data/output/standing_buffalo_dakota_first_nation_2020.json',
-        'data/output/standing_buffalo_dakota_first_nation_2021.json',
-        'data/output/standing_buffalo_dakota_first_nation_2022.json',
-        'data/output/standing_buffalo_dakota_first_nation_2023.json',
-        'data/output/standing_buffalo_dakota_nation_2024.json',
-        'data/output/star_blanket_cree_nation_2020.json',
-        'data/output/star_blanket_cree_nation_2021.json',
-        'data/output/star_blanket_cree_nation_2022.json',
-        'data/output/star_blanket_cree_nation_2023.json',
-        'data/output/star_blanket_cree_nation_2024.json',
-        'data/output/stellaten_first_nation_2020.json',
-        'data/output/stellaten_first_nation_2021.json',
-        'data/output/stellaten_first_nation_2022.json',
-        'data/output/stellaten_first_nation_2023.json',
-        'data/output/stellaten_first_nation_2024.json',
-        'data/output/stoney_first_nation_-_morley_health_centre_2022.json',
-        'data/output/stoney_first_nation_-_morley_health_centre_2023.json',
-        'data/output/stoney_first_nation_-_morley_health_centre_2024.json',
-        'data/output/stoney_first_nation_2020.json',
-        'data/output/stoney_first_nation_2021.json',
-        'data/output/stsailes_2020.json',
-        'data/output/stsailes_2021.json',
-        'data/output/stsailes_2022.json',
-        'data/output/stsailes_2023.json',
-        'data/output/stsailes_2024.json',
-        'data/output/stswecemc_xgattem_first_nation_2020.json',
-        'data/output/stswecemc_xgattem_first_nation_2021.json',
-        'data/output/stswecemc_xgettem_first_nation_2023.json',
-        'data/output/stswecemc_xgettem_first_nation_2024.json',
-        'data/output/sturgeon_lake_cree_nation_2020.json',
-        'data/output/sturgeon_lake_cree_nation_2021.json',
-        'data/output/sturgeon_lake_cree_nation_2022.json',
-        'data/output/sturgeon_lake_cree_nation_2023.json',
-        'data/output/sturgeon_lake_cree_nation_2024.json',
-        'data/output/sturgeon_lake_first_nation_2020.json',
-        'data/output/sturgeon_lake_first_nation_2021.json',
-        'data/output/sturgeon_lake_first_nation_2022.json',
-        'data/output/sturgeon_lake_first_nation_2023.json',
-        'data/output/sturgeon_lake_first_nation_2024.json',
-        'data/output/stzuminus_first_nation_2020.json',
-        'data/output/stzuminus_first_nation_2021.json',
-        'data/output/stzuminus_first_nation_2022.json',
-        'data/output/stzuminus_first_nation_2023.json',
-        'data/output/stzuminus_first_nation_2024.json',
-        'data/output/sucker_creek_first_nation_#150a_2020.json',
-        'data/output/sucker_creek_first_nation_#150a_2021.json',
-        'data/output/sucker_creek_first_nation_#150a_2022.json',
-        'data/output/sucker_creek_first_nation_#150a_2023.json',
-        'data/output/sucker_creek_first_nation_#150a_2024.json',
-        'data/output/sumas_first_nation_2020.json',
-        'data/output/sumas_first_nation_2021.json',
-        'data/output/sumas_first_nation_2022.json',
-        'data/output/sumas_first_nation_2023.json',
-        'data/output/sumas_first_nation_2024.json',
-        'data/output/sunchild_first_nation_2020.json',
-        'data/output/sunchild_first_nation_2021.json',
-        'data/output/sunchild_first_nation_2022.json',
-        'data/output/sunchild_first_nation_2023.json',
-        'data/output/sunchild_first_nation_2024.json',
-        'data/output/swan_lake_first_nation_2020.json',
-        'data/output/swan_lake_first_nation_2021.json',
-        'data/output/swan_lake_first_nation_2022.json',
-        'data/output/swan_lake_first_nation_2023.json',
-        'data/output/swan_lake_first_nation_2024.json',
-        'data/output/swan_river_first_nation_2020.json',
-        'data/output/swan_river_first_nation_2021.json',
-        'data/output/swan_river_first_nation_2022.json',
-        'data/output/swan_river_first_nation_2023.json',
-        'data/output/swan_river_first_nation_2024.json',
-        'data/output/sweetgrass_first_nation_2020.json',
-        'data/output/sweetgrass_first_nation_2021.json',
-        'data/output/sweetgrass_first_nation_2022.json',
-        'data/output/sweetgrass_first_nation_2023.json',
-        'data/output/sweetgrass_first_nation_2024.json',
-        'data/output/tahltan_band_2024.json',
-        'data/output/tahltan_indian_band_2020.json',
-        'data/output/tahltan_indian_band_2021.json',
-        'data/output/tahltan_indian_band_2022.json',
-        'data/output/tahltan_indian_band_2023.json',
-        'data/output/takla_nation_2020.json',
-        'data/output/takla_nation_2021.json',
-        'data/output/takla_nation_2022.json',
-        'data/output/takla_nation_2023.json',
-        'data/output/takla_nation_2024.json',
-        'data/output/taku_river_tlingit_first_nation_2020.json',
-        'data/output/taku_river_tlingit_first_nation_2021.json',
-        'data/output/taku_river_tlingit_first_nation_2022.json',
-        'data/output/tallcree_first_nation_2020.json',
-        'data/output/tallcree_first_nation_2021.json',
-        'data/output/tallcree_first_nation_2022.json',
-        'data/output/tataskweyak_cree_nation_2020.json',
-        'data/output/taykwa_tagamou_nation_2020.json',
-        'data/output/taykwa_tagamou_nation_2021.json',
-        'data/output/taykwa_tagamou_nation_2022.json',
-        'data/output/taykwa_tagamou_nation_2023.json',
-        'data/output/temagami_first_nation_2020.json',
-        'data/output/temagami_first_nation_2021.json',
-        'data/output/temagami_first_nation_2022.json',
-        'data/output/temagami_first_nation_2023.json',
-        'data/output/temagami_first_nation_2024.json',
-        'data/output/the_algonquins_of_barriere_lake_(mitchikanibikok_inik)_2021.json',
-        'data/output/the_key_first_nation_2020.json',
-        'data/output/the_key_first_nation_2021.json',
-        'data/output/the_key_first_nation_2022.json',
-        'data/output/the_ojibway_nation_of_saugeen_2020.json',
-        'data/output/the_ojibway_nation_of_saugeen_2021.json',
-        'data/output/the_ojibway_nation_of_saugeen_2022.json',
-        'data/output/the_ojibway_nation_of_saugeen_2023.json',
-        'data/output/thessalon_first_nation_2020.json',
-        'data/output/thessalon_first_nation_2021.json',
-        'data/output/thessalon_first_nation_2022.json',
-        'data/output/thessalon_first_nation_2023.json',
-        'data/output/thunderchild_first_nation_2020.json',
-        'data/output/timiskaming_first_nation_2020.json',
-        'data/output/timiskaming_first_nation_2021.json',
-        'data/output/timiskaming_first_nation_2022.json',
-        'data/output/timiskaming_first_nation_2023.json',
-        'data/output/timiskaming_first_nation_2024.json',
-        'data/output/titqet_administration_2020.json',
-        'data/output/titqet_administration_2021.json',
-        'data/output/titqet_administration_2022.json',
-        'data/output/titqet_administration_2023.json',
-        'data/output/titqet_administration_2024.json',
-        'data/output/tkemlups_te_secwepemc_2021.json',
-        'data/output/tkemlúps_te_secwépemc_2022.json',
-        'data/output/tkemlüps_te_secwépemc_2020.json',
-        'data/output/tkemlüps_te_secwépemc_2023.json',
-        'data/output/tkemlüps_te_secwépemc_2024.json',
-        'data/output/tla-o-qui-aht_first_nation_2020.json',
-        'data/output/tla-o-qui-aht_first_nation_2021.json',
-        'data/output/tla-o-qui-aht_first_nation_2022.json',
-        'data/output/tla-o-qui-aht_first_nation_2023.json',
-        'data/output/tla-o-qui-aht_first_nation_2024.json',
-        'data/output/tlazten_nation_2020.json',
-        'data/output/tlazten_nation_2021.json',
-        'data/output/tlazten_nation_2022.json',
-        'data/output/tlazten_nation_2023.json',
-        'data/output/tlazten_nation_2024.json',
-        'data/output/tlesqox_2021.json',
-        'data/output/tlesqox_2023.json',
-        'data/output/tletinqox_government_2020.json',
-        'data/output/tletinqox_government_2021.json',
-        'data/output/tletinqox_government_2023.json',
-        'data/output/tletinqox_government_2024.json',
-        'data/output/tlowitsis_first_nation_2020.json',
-        'data/output/tlowitsis_first_nation_2021.json',
-        'data/output/tlowitsis_first_nation_2022.json',
-        'data/output/toosey_indian_band_2020.json',
-        'data/output/tootinaowaziibeeng_treaty_reserve_#292_2020.json',
-        'data/output/tootinaowaziibeeng_treaty_reserve_#292_2021.json',
-        'data/output/tootinaowaziibeeng_treaty_reserve_#292_2022.json',
-        'data/output/tsalalh_2020.json',
-        'data/output/tsalalh_2021.json',
-        'data/output/tsalalh_2022.json',
-        'data/output/tsartlip_first_nation_2020.json',
-        'data/output/tsartlip_first_nation_2021.json',
-        'data/output/tsartlip_first_nation_2022.json',
-        'data/output/tsartlip_first_nation_2023.json',
-        'data/output/tsartlip_first_nation_2024.json',
-        'data/output/tsawout_first_nation_2020.json',
-        'data/output/tsawout_first_nation_2021.json',
-        'data/output/tsawout_first_nation_2022.json',
-        'data/output/tsawout_first_nation_2023.json',
-        'data/output/tsawout_first_nation_2024.json',
-        'data/output/tsay_keh_dene_nation_2020.json',
-        'data/output/tsay_keh_dene_nation_2022.json',
-        'data/output/tsay_keh_dene_nation_2023.json',
-        'data/output/tsay_keh_dene_nation_2024.json',
-        'data/output/tseshaht_first_nation_2020.json',
-        'data/output/tseshaht_first_nation_2021.json',
-        'data/output/tseycum_first_nation_2020.json',
-        'data/output/tseycum_first_nation_2021.json',
-        'data/output/tseycum_first_nation_2022.json',
-        'data/output/tsideldel_first_nation_2020.json',
-        'data/output/tsideldel_first_nation_2023.json',
-        'data/output/tsideldel_first_nation_2024.json',
-        'data/output/tskwaylaxw_first_nation_2020.json',
-        'data/output/tskwaylaxw_first_nation_2021.json',
-        'data/output/tskwaylaxw_first_nation_2022.json',
-        'data/output/tskwaylaxw_first_nation_2023.json',
-        'data/output/tskwaylaxw_first_nation_2024.json',
-        'data/output/tsleil-waututh_nation_2020.json',
-        'data/output/tsleil-waututh_nation_2021.json',
-        'data/output/tsleil-waututh_nation_2022.json',
-        'data/output/tsleil-waututh_nation_2023.json',
-        'data/output/tsleil-waututh_nation_2024.json',
-        'data/output/tsou-ke_first_nation_2020.json',
-        'data/output/tsou-ke_first_nation_2021.json',
-        'data/output/tsou-ke_first_nation_2022.json',
-        'data/output/tsou-ke_first_nation_2023.json',
-        'data/output/tsou-ke_first_nation_2024.json',
-        'data/output/tsuubaa-asatx_(lake_cowichan_first_nation)_2020.json',
-        'data/output/tsuubaa-asatx_(lake_cowichan_first_nation)_2021.json',
-        'data/output/tsuubaa-asatx_2022.json',
-        'data/output/tsuubaa-asatx_2023.json',
-        'data/output/tsuubaa-asatx_2024.json',
-        'data/output/tulita_dene_band_2020.json',
-        'data/output/tulita_dene_band_2021.json',
-        'data/output/tulita_dene_band_2023.json',
-        'data/output/tulita_dene_band_2024.json',
-        'data/output/tzeachten_first_nation_2020.json',
-        'data/output/tzeachten_first_nation_2021.json',
-        'data/output/tzeachten_first_nation_2022.json',
-        'data/output/tzeachten_first_nation_2023.json',
-        'data/output/tzeachten_first_nation_2024.json',
-        'data/output/tŝideldel_first_nation_2021.json',
-        'data/output/ulkatcho_first_nation_2020.json',
-        'data/output/ulkatcho_first_nation_2021.json',
-        'data/output/ulkatcho_first_nation_2023.json',
-        'data/output/ulkatcho_first_nations_2024.json',
-        'data/output/union_bar_first_nations_2020.json',
-        'data/output/union_bar_first_nations_2021.json',
-        'data/output/union_bar_first_nations_2022.json',
-        'data/output/union_bar_first_nations_2023.json',
-        'data/output/union_bar_first_nations_2024.json',
-        'data/output/unknown_first_nation_2024.json',
-        'data/output/upper_nicola_band_2020.json',
-        'data/output/upper_nicola_band_2021.json',
-        'data/output/upper_nicola_band_2022.json',
-        'data/output/upper_nicola_band_2023.json',
-        'data/output/upper_nicola_band_2024.json',
-        'data/output/upper_similkameen_band_2021.json',
-        'data/output/upper_similkameen_band_2022.json',
-        'data/output/upper_similkameen_band_2023.json',
-        'data/output/upper_similkameen_indian_band_2020.json',
-        'data/output/upper_similkameen_indian_band_2024.json',
-        'data/output/wabauskang_first_nation_2020.json',
-        'data/output/wabauskang_first_nation_2021.json',
-        'data/output/wabauskang_first_nation_2022.json',
-        'data/output/wabigoon_lake_ojibway_nation_2020.json',
-        'data/output/wabigoon_lake_ojibway_nation_2021.json',
-        'data/output/wagmatcook_first_nation_2020.json',
-        'data/output/wagmatcook_first_nation_2021.json',
-        'data/output/wagmatcook_first_nation_2022.json',
-        'data/output/wagmatcook_first_nation_2023.json',
-        'data/output/wagmatcook_first_nation_2024.json',
-        'data/output/wahgoshig_first_nation_-_abitibi_reserve_#70_2020.json',
-        'data/output/wahgoshig_first_nation_-_abitibi_reserve_#70_2021.json',
-        'data/output/wahnapitae_first_nation_2020.json',
-        'data/output/wahnapitae_first_nation_2021.json',
-        'data/output/wahnapitae_first_nation_2022.json',
-        'data/output/wahnapitae_first_nation_2023.json',
-        'data/output/wahnapitae_first_nation_2024.json',
-        'data/output/wahpeton_dakota_nation_2020.json',
-        'data/output/wahpeton_dakota_nation_2021.json',
-        'data/output/wahta_mohawks_2021.json',
-        'data/output/wahta_mohawks_2022.json',
-        'data/output/wahta_mohawks_2023.json',
-        'data/output/wahta_mohawks_2024.json',
-        'data/output/walpole_island_first_nation_2020.json',
-        'data/output/walpole_island_first_nation_2021.json',
-        'data/output/walpole_island_first_nation_2022.json',
-        'data/output/walpole_island_first_nation_2023.json',
-        'data/output/wapekeka_first_nation_2020.json',
-        'data/output/wapekeka_first_nation_2021.json',
-        'data/output/wapekeka_first_nation_2022.json',
-        'data/output/wapekeka_first_nation_2023.json',
-        'data/output/war_lake_first_nation_2020.json',
-        'data/output/war_lake_first_nation_2021.json',
-        'data/output/war_lake_first_nation_2022.json',
-        'data/output/war_lake_first_nation_2023.json',
-        'data/output/war_lake_first_nation_2024.json',
-        'data/output/wasagamack_first_nation_2020.json',
-        'data/output/wasagamack_first_nation_2021.json',
-        'data/output/wasagamack_first_nation_2022.json',
-        'data/output/wasauksing_first_nation_2021.json',
-        'data/output/wasauksing_first_nation_2022.json',
-        'data/output/washagamis_bay_first_nation_2020.json',
-        'data/output/washagamis_bay_first_nation_2021.json',
-        'data/output/washagamis_bay_first_nation_2022.json',
-        'data/output/washagamis_bay_first_nation_2023.json',
-        'data/output/washagamis_bay_first_nation_2024.json',
-        'data/output/wasoqopaq_first_nation_2024.json',
-        'data/output/waterhen_lake_first_nation_2020.json',
-        'data/output/waterhen_lake_first_nation_2021.json',
-        'data/output/waterhen_lake_first_nation_2022.json',
-        'data/output/waterhen_lake_first_nation_2023.json',
-        'data/output/waterhen_lake_first_nation_2024.json',
-        'data/output/wawakapewin_first_nation_2020.json',
-        'data/output/wawakapewin_first_nation_2021.json',
-        'data/output/wawakapewin_first_nation_2022.json',
-        'data/output/wawakapewin_first_nation_2023.json',
-        'data/output/wawakapewin_first_nation_2024.json',
-        'data/output/waywayseecappo_first_nation_2020.json',
-        'data/output/waywayseecappo_first_nation_2021.json',
-        'data/output/waywayseecappo_first_nation_2022.json',
-        'data/output/waywayseecappo_first_nation_2023.json',
-        'data/output/waywayseecappo_first_nation_2024.json',
-        'data/output/we_wai_kai_nation_2020.json',
-        'data/output/we_wai_kai_nation_2021.json',
-        'data/output/we_wai_kai_nation_2022.json',
-        'data/output/we_wai_kai_nation_2023.json',
-        'data/output/we_wai_kai_nation_2024.json',
-        'data/output/webequie_first_nation_2020.json',
-        'data/output/webequie_first_nation_2021.json',
-        'data/output/weenusk_first_nation_2021.json',
-        'data/output/weenusk_first_nation_2022.json',
-        'data/output/wei_wai_kum_first_nation_2024.json',
-        'data/output/wekoqmaq_first_nation_2020.json',
-        'data/output/wekoqmaq_first_nation_2021.json',
-        'data/output/wekoqmaq_first_nation_2022.json',
-        'data/output/wekoqmaq_first_nation_2023.json',
-        'data/output/wekoqmaq_first_nation_2024.json',
-        'data/output/west_moberly_first_nations_2020.json',
-        'data/output/west_moberly_first_nations_2021.json',
-        'data/output/west_moberly_first_nations_2022.json',
-        'data/output/west_moberly_first_nations_2023.json',
-        'data/output/west_point_first_nation_2020.json',
-        'data/output/west_point_first_nation_2021.json',
-        'data/output/west_point_first_nation_2023.json',
-        'data/output/west_point_first_nation_2024.json',
-        'data/output/wetsuweten_first_nation_2020.json',
-        'data/output/wetsuweten_first_nation_2021.json',
-        'data/output/wetsuweten_first_nation_2023.json',
-        'data/output/wetsuweten_first_nation_2024.json',
-        'data/output/whispering_pines_clinton_indian_band_2020.json',
-        'data/output/whispering_pines_clinton_indian_band_2021.json',
-        'data/output/whispering_pines_clinton_indian_band_2022.json',
-        'data/output/whispering_pines_clinton_indian_band_2023.json',
-        'data/output/whispering_pines_clinton_indian_band_2024.json',
-        'data/output/white_bear_first_nations_2020.json',
-        'data/output/white_bear_first_nations_2021.json',
-        'data/output/white_bear_first_nations_2022.json',
-        'data/output/white_bear_first_nations_2023.json',
-        'data/output/white_bear_first_nations_2024.json',
-        'data/output/white_river_first_nation_2020.json',
-        'data/output/white_river_first_nation_2021.json',
-        'data/output/white_river_first_nation_2022.json',
-        'data/output/whitefish_lake_band_no._128_2020.json',
-        'data/output/whitefish_lake_band_no._128_2024.json',
-        'data/output/whitefish_lake_first_nation_#459_2020.json',
-        'data/output/whitefish_lake_first_nation_#459_2021.json',
-        'data/output/whitefish_lake_first_nation_#459_2023.json',
-        'data/output/whitefish_lake_first_nation_#459_2024.json',
-        'data/output/whitefish_river_first_nation_2020.json',
-        'data/output/whitefish_river_first_nation_2021.json',
-        'data/output/whitefish_river_first_nation_2022.json',
-        'data/output/whitefish_river_first_nation_2023.json',
-        'data/output/whitefish_river_first_nation_2024.json',
-        'data/output/wiikwemkoong_unceded_territory_2020.json',
-        'data/output/wiikwemkoong_unceded_territory_2021.json',
-        'data/output/wiikwemkoong_unceded_territory_2022.json',
-        'data/output/wiikwemkoong_unceded_territory_2023.json',
-        'data/output/wiikwemkoong_unceded_territory_2024.json',
-        'data/output/williams_lake_first_nation_2020.json',
-        'data/output/williams_lake_first_nation_2021.json',
-        'data/output/williams_lake_first_nation_2023.json',
-        'data/output/williams_lake_first_nation_2024.json',
-        'data/output/witchekan_lake_first_nation_2020.json',
-        'data/output/witchekan_lake_first_nation_2021.json',
-        'data/output/witchekan_lake_first_nation_2022.json',
-        'data/output/witset_first_nation_2020.json',
-        'data/output/witset_first_nation_2021.json',
-        'data/output/witset_first_nation_2022.json',
-        'data/output/witset_first_nation_2023.json',
-        'data/output/witset_first_nation_2024.json',
-        'data/output/wolf_lake_first_nation_2020.json',
-        'data/output/wolf_lake_first_nation_2021.json',
-        'data/output/wolf_lake_first_nation_2022.json',
-        'data/output/wolf_lake_first_nation_2023.json',
-        'data/output/wolf_lake_first_nation_2024.json',
-        'data/output/wood_mountain_lakota_first_nation_2020.json',
-        'data/output/wood_mountain_lakota_first_nation_2021.json',
-        'data/output/wood_mountain_lakota_first_nation_2022.json',
-        'data/output/wood_mountain_lakota_first_nation_2023.json',
-        'data/output/wood_mountain_lakota_first_nation_2024.json',
-        'data/output/woodland_cree_first_nation_2020.json',
-        'data/output/woodland_cree_first_nation_2021.json',
-        'data/output/woodland_cree_first_nation_2022.json',
-        'data/output/woodland_cree_first_nation_2023.json',
-        'data/output/woodland_cree_first_nation_2024.json',
-        'data/output/woodstock_first_nation_2020.json',
-        'data/output/woodstock_first_nation_2021.json',
-        'data/output/woodstock_first_nation_2022.json',
-        'data/output/woodstock_first_nation_2023.json',
-        'data/output/woodstock_first_nation_2024.json',
-        'data/output/wuikinuxv_nation_2020.json',
-        'data/output/wuikinuxv_nation_2021.json',
-        'data/output/wuikinuxv_nation_2022.json',
-        'data/output/wuikinuxv_nation_2023.json',
-        'data/output/wuikinuxv_nation_2024.json',
-        'data/output/wunnumin_lake_first_nation_2020.json',
-        'data/output/wunnumin_lake_first_nation_2021.json',
-        'data/output/wunnumin_lake_first_nation_2022.json',
-        'data/output/wuskwi_sipihk_first_nation_2020.json',
-        'data/output/wuskwi_sipihk_first_nation_2021.json',
-        'data/output/wuskwi_sipihk_first_nation_2022.json',
-        'data/output/wuskwi_sipihk_first_nation_2023.json',
-        'data/output/wuskwi_sipihk_first_nation_2024.json',
-        'data/output/xatsull_first_nation_2021.json',
-        'data/output/xatśūll_first_nation_2023.json',
-        'data/output/xatśūll_first_nation_2024.json',
-        'data/output/xaxlip_2020.json',
-        'data/output/xaxlip_2021.json',
-        'data/output/xaxlip_2022.json',
-        'data/output/xaxlip_2024.json',
-        'data/output/xeni_gwetin_first_nations_government_2020.json',
-        'data/output/xeni_gwetin_first_nations_government_2021.json',
-        'data/output/xeni_gwetin_first_nations_government_2023.json',
-        'data/output/xeni_gwetin_first_nations_government_2024.json',
-        'data/output/yakweakwioose_first_nation_2020.json',
-        'data/output/yakweakwioose_first_nation_2021.json',
-        'data/output/yakweakwioose_first_nation_2022.json',
-        'data/output/yakweakwioose_first_nation_2023.json',
-        'data/output/yakweakwioose_first_nation_2024.json',
-        'data/output/yale_first_nation_2020.json',
-        'data/output/yale_first_nation_2021.json',
-        'data/output/yale_first_nation_2022.json',
-        'data/output/yale_first_nation_2023.json',
-        'data/output/yale_first_nation_2024.json',
-        'data/output/yekooche_first_nation_2020.json',
-        'data/output/yekooche_first_nation_2021.json',
-        'data/output/yekooche_first_nation_2023.json',
-        'data/output/yellow_quill_first_nation_2020.json',
-        'data/output/yellow_quill_first_nation_2021.json',
-        'data/output/yellow_quill_first_nation_2022.json',
-        'data/output/yellow_quill_first_nation_2023.json',
-        'data/output/yellowknives_dene_first_nation_2020.json',
-        'data/output/yellowknives_dene_first_nation_2021.json',
-        'data/output/york_factory_first_nation_2020.json',
-        'data/output/york_factory_first_nation_2021.json',
-        'data/output/yunesitin_government_2020.json',
-        'data/output/yunesitin_government_2021.json',
-        'data/output/yunesitin_government_2023.json',
-        'data/output/yunesitin_government_2024.json',
-        'data/output/zhiibaahaasing_first_nation_2020.json',
-        'data/output/zhiibaahaasing_first_nation_2021.json',
-        'data/output/zhiibaahaasing_first_nation_2022.json',
-        'data/output/zhiibaahaasing_first_nation_2023.json',
-        'data/output/zhiibaahaasing_first_nation_2024.json'
-    ];
+let allData = [];
+let filtered = [];
+let sortCol = 'health_score';
+let sortDir = -1;
+let page = 1;
+const PAGE_SIZE = 50;
 
-    let allData = [];
-    let selectedRow = null;
+const fmt = n => n ? '$' + Math.round(n).toLocaleString() : '—';
+const pct = n => n ? n.toFixed(1) + '%' : '—';
+const scoreClass = s => s >= 80 ? 'score-high' : s >= 60 ? 'score-mid' : 'score-low';
 
-    function scoreClass(score) {
-        if (score >= 80) return 'score-high';
-        if (score >= 60) return 'score-mid';
-        return 'score-low';
-    }
+fetch('data/nations.json')
+    .then(r => r.json())
+    .then(data => {
+        allData = data;
+        applyFilters();
+    });
 
-    function metricClass(score) {
-        if (score >= 80) return '';
-        if (score >= 60) return 'warning';
-        return 'danger';
-    }
+function applyFilters() {
+    const search = document.getElementById('search').value.toLowerCase();
+    const year = document.getElementById('filter-year').value;
+    const province = document.getElementById('filter-province').value;
+    const scoreFilter = document.getElementById('filter-score').value;
+    const flagFilter = document.getElementById('filter-flags').value;
 
-    function formatCurrency(n) {
-        if (!n && n !== 0) return 'N/A';
-        return '$' + Math.round(n).toLocaleString('en-CA');
-    }
-
-    function formatPct(n) {
-        if (!n && n !== 0) return 'N/A';
-        return n.toFixed(1) + '%';
-    }
-
-    function formatRatio(n) {
-        if (!n && n !== 0) return 'N/A';
-        return n.toFixed(2) + 'x';
-    }
-
-    function showDetail(d) {
-        const panel = document.getElementById('detail-panel');
-        const warnings = d.warnings || [];
-        const warningHtml = warnings.length > 0 ? `
-            <div class="warning-box">
-                <h4>⚠ Flags & Warnings</h4>
-                <ul>${warnings.map(w => `<li>${w}</li>`).join('')}</ul>
-            </div>` : '';
-
-        const notesHtml = d.notes ? `
-            <div class="notes-box"><strong>Auditor notes:</strong> ${d.notes}</div>` : '';
-
-        panel.innerHTML = `
-            <button class="close-btn" onclick="closeDetail()">✕ Close</button>
-            <h2>${d.nation} — Fiscal Year ${d.fiscal_year}</h2>
-
-            <div class="section-title">Health & Dependency</div>
-            <div class="detail-grid">
-                <div class="metric-card ${metricClass(d.health_score)}">
-                    <div class="metric-label">Health Score</div>
-                    <div class="metric-value ${scoreClass(d.health_score)}">${d.health_score} / 100</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">ISC Dependency</div>
-                    <div class="metric-value">${formatPct(d.isc_dependency_pct)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Transfer Dependency</div>
-                    <div class="metric-value">${formatPct(d.transfer_dependency_pct)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">OSR %</div>
-                    <div class="metric-value">${formatPct(d.osr_pct)}</div>
-                </div>
-            </div>
-
-            <div class="section-title">Financial Position</div>
-            <div class="detail-grid">
-                <div class="metric-card">
-                    <div class="metric-label">Total Revenue</div>
-                    <div class="metric-value">${formatCurrency(d.revenue)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Total Expenses</div>
-                    <div class="metric-value">${formatCurrency(d.expenses)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Annual Surplus</div>
-                    <div class="metric-value">${formatCurrency(d.annual_surplus)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Accumulated Surplus</div>
-                    <div class="metric-value">${formatCurrency(d.accumulated_surplus)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Cash</div>
-                    <div class="metric-value">${formatCurrency(d.cash)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Long-term Debt</div>
-                    <div class="metric-value">${formatCurrency(d.long_term_debt)}</div>
-                </div>
-            </div>
-
-            <div class="section-title">Ratios</div>
-            <div class="detail-grid">
-                <div class="metric-card">
-                    <div class="metric-label">Working Capital Ratio</div>
-                    <div class="metric-value">${formatRatio(d.working_capital_ratio)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Liquidity Ratio</div>
-                    <div class="metric-value">${formatRatio(d.liquidity_ratio)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Debt Service Coverage</div>
-                    <div class="metric-value">${formatRatio(d.debt_service_coverage)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Net Assets to Debt</div>
-                    <div class="metric-value">${formatRatio(d.net_assets_to_debt)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">EBITDA Proxy</div>
-                    <div class="metric-value">${formatCurrency(d.ebitda_proxy)}</div>
-                </div>
-            </div>
-
-            <div class="section-title">Year-over-Year</div>
-            <div class="detail-grid">
-                <div class="metric-card">
-                    <div class="metric-label">Revenue Growth</div>
-                    <div class="metric-value">${formatPct(d.revenue_growth)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Expense Growth</div>
-                    <div class="metric-value">${formatPct(d.expense_growth)}</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Surplus Growth</div>
-                    <div class="metric-value">${formatPct(d.surplus_growth)}</div>
-                </div>
-            </div>
-
-            ${warningHtml}
-            ${notesHtml}
-        `;
-
-        panel.style.display = 'block';
-        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function closeDetail() {
-        document.getElementById('detail-panel').style.display = 'none';
-        if (selectedRow) {
-            selectedRow.classList.remove('selected');
-            selectedRow = null;
+    filtered = allData.filter(d => {
+        if (search && !d.nation.toLowerCase().includes(search)) return false;
+        if (year && d.fiscal_year !== year) return false;
+        if (province && d.province !== province) return false;
+        if (scoreFilter !== '') {
+            const s = parseInt(scoreFilter);
+            if (s === 80 && d.health_score < 80) return false;
+            if (s === 60 && (d.health_score < 60 || d.health_score >= 80)) return false;
+            if (s === 0 && d.health_score >= 60) return false;
         }
-    }
+        if (flagFilter === 'going_concern' && !d.going_concern) return false;
+        if (flagFilter === 'audit_qualified' && !d.audit_qualified) return false;
+        return true;
+    });
 
-    async function loadData() {
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '';
+    filtered.sort((a, b) => {
+        let av = a[sortCol] || 0, bv = b[sortCol] || 0;
+        if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+        return sortDir * (av - bv);
+    });
 
-        allData = await Promise.all(
-            nations.map(path => fetch(path).then(r => r.json()))
-        );
+    page = 1;
+    render();
+}
 
-        allData.sort((a, b) => b.health_score - a.health_score);
+function sortBy(col) {
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = -1; }
+    document.querySelectorAll('th').forEach(th => {
+        th.classList.remove('sorted-asc', 'sorted-desc');
+    });
+    applyFilters();
+}
 
-        allData.forEach((d, i) => {
-            const warnings = d.warnings || [];
-            const hasGoingConcern = warnings.some(w => w.includes('Going concern'));
-            const hasQualified = warnings.some(w => w.includes('Qualified'));
-            const hasOneTime = warnings.some(w => w.includes('One-time'));
+function render() {
+    const start = (page - 1) * PAGE_SIZE;
+    const pageData = filtered.slice(start, start + PAGE_SIZE);
 
-            const flags = [
-                hasGoingConcern ? '<span class="tag tag-warning">Going Concern</span>' : '',
-                hasQualified ? '<span class="tag tag-warning">Qualified Audit</span>' : '',
-                hasOneTime ? '<span class="tag tag-warning">One-time Item</span>' : '',
-                warnings.length === 0 ? '<span class="tag tag-ok">Clean</span>' : ''
-            ].join('');
+    document.getElementById('stat-bar').textContent =
+        `${filtered.length.toLocaleString()} records`;
 
-            const tr = document.createElement('tr');
-            tr.className = 'clickable';
-            tr.innerHTML = `
-                <td><strong>${d.nation}</strong></td>
-                <td><span class="score ${scoreClass(d.health_score)}">${d.health_score} / 100</span></td>
-                <td>${formatPct(d.isc_dependency_pct)}</td>
-                <td>${formatPct(d.osr_pct)}</td>
-                <td>${formatCurrency(d.revenue)}</td>
-                <td>${flags}</td>
-            `;
-            tr.addEventListener('click', () => {
-                if (selectedRow) selectedRow.classList.remove('selected');
-                selectedRow = tr;
-                tr.classList.add('selected');
-                showDetail(d);
-            });
-            tbody.appendChild(tr);
-        });
-    }
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = pageData.map((d, i) => {
+        const flags = [];
+        if (d.going_concern) flags.push('<span class="badge badge-warn">Going Concern</span>');
+        if (d.audit_qualified) flags.push('<span class="badge badge-warn">Qualified</span>');
+        if (d.one_time_items) flags.push('<span class="badge badge-warn">One-time</span>');
+        return `<tr class="clickable" onclick="showDetail(${start + i})">
+            <td>${d.nation}</td>
+            <td>${d.fiscal_year}</td>
+            <td>${d.province || '—'}</td>
+            <td><span class="score ${scoreClass(d.health_score)}">${d.health_score || '—'}</span></td>
+            <td>${pct(d.isc_dependency_pct)}</td>
+            <td>${pct(d.osr_pct)}</td>
+            <td>${fmt(d.revenue)}</td>
+            <td>${fmt(d.annual_surplus)}</td>
+            <td>${flags.join('')}</td>
+        </tr>`;
+    }).join('');
 
-    loadData();
+    renderPagination();
+}
+
+function renderPagination() {
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    const el = document.getElementById('pagination');
+    if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+    let html = `<button onclick="goPage(${page-1})" ${page===1?'disabled':''}>← Prev</button>`;
+    html += `<span>Page ${page} of ${totalPages}</span>`;
+    html += `<button onclick="goPage(${page+1})" ${page===totalPages?'disabled':''}>Next →</button>`;
+    el.innerHTML = html;
+}
+
+function goPage(p) {
+    page = p;
+    render();
+    window.scrollTo(0, 0);
+}
+
+function showDetail(idx) {
+    const d = filtered[idx];
+    const panel = document.getElementById('detail');
+
+    const warnings = [];
+    if (d.going_concern) warnings.push('Going concern uncertainty noted by auditor');
+    if (d.audit_qualified) warnings.push('Qualified audit opinion issued');
+    if (d.one_time_items) warnings.push(`One-time item: ${d.one_time_description || 'see notes'}`);
+    if (d.isc_dependency_pct > 75) warnings.push(`High ISC dependency (${pct(d.isc_dependency_pct)})`);
+
+    const expRows = ['health','education','housing','social','administration','expenses_salaries_total']
+        .map(k => {
+            const val = k === 'expenses_salaries_total' ? d[k] : d['expenses_'+k];
+            if (!val) return '';
+            const label = k === 'expenses_salaries_total' ? 'Salaries & Benefits' : k.charAt(0).toUpperCase() + k.slice(1);
+            return `<span>${label}</span><span>${fmt(val)}</span>`;
+        }).join('');
+
+    const revLines = Object.entries(d.revenue_lines || {})
+        .map(([k,v]) => `<span>${k}</span><span>${fmt(v)}</span>`)
+        .join('');
+
+    panel.style.display = 'block';
+    panel.innerHTML = `
+        <button class="close-btn" onclick="closeDetail()">✕ Close</button>
+        <h2>${d.nation}</h2>
+        <div class="meta">Fiscal Year ${d.fiscal_year} · ${d.province || ''} · Auditor: ${d.auditor || 'Unknown'}</div>
+
+        <div class="grid">
+            <div class="card"><div class="card-label">Health Score</div><div class="card-value ${scoreClass(d.health_score)}">${d.health_score || '—'} / 100</div></div>
+            <div class="card"><div class="card-label">Total Revenue</div><div class="card-value">${fmt(d.revenue)}</div></div>
+            <div class="card"><div class="card-label">Annual Surplus</div><div class="card-value">${fmt(d.annual_surplus)}</div></div>
+            <div class="card"><div class="card-label">Accumulated Surplus</div><div class="card-value">${fmt(d.accumulated_surplus)}</div></div>
+            <div class="card"><div class="card-label">ISC Dependency</div><div class="card-value">${pct(d.isc_dependency_pct)}</div></div>
+            <div class="card"><div class="card-label">Own Source Revenue</div><div class="card-value">${pct(d.osr_pct)}</div></div>
+            <div class="card"><div class="card-label">Cash</div><div class="card-value">${fmt(d.cash)}</div></div>
+            <div class="card"><div class="card-label">Long-term Debt</div><div class="card-value">${fmt(d.long_term_debt)}</div></div>
+            <div class="card"><div class="card-label">Capital Assets</div><div class="card-value">${fmt(d.tangible_capital_assets)}</div></div>
+            <div class="card"><div class="card-label">Population (On-Reserve)</div><div class="card-value">${d.population_on_reserve ? d.population_on_reserve.toLocaleString() : '—'}</div></div>
+            <div class="card"><div class="card-label">Total Membership</div><div class="card-value">${d.population_total ? d.population_total.toLocaleString() : '—'}</div></div>
+            <div class="card"><div class="card-label">Employees</div><div class="card-value">${d.num_employees ? d.num_employees.toLocaleString() : '—'}</div></div>
+        </div>
+
+        ${expRows ? `<div class="section">Expenses by Program</div><div class="rev-lines">${expRows}</div>` : ''}
+        ${revLines ? `<div class="section">Revenue Lines</div><div class="rev-lines">${revLines}</div>` : ''}
+        ${warnings.length ? `<div class="warn-box"><strong>⚠ Flags</strong>${warnings.map(w=>`<div>${w}</div>`).join('')}</div>` : ''}
+        ${d.notes ? `<div class="notes-box"><strong>Notes:</strong> ${d.notes}</div>` : ''}
+        ${d.economic_notes ? `<div class="notes-box"><strong>Economic:</strong> ${d.economic_notes}</div>` : ''}
+    `;
+    panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeDetail() {
+    document.getElementById('detail').style.display = 'none';
+}
+
+document.getElementById('search').addEventListener('input', applyFilters);
+document.getElementById('filter-year').addEventListener('change', applyFilters);
+document.getElementById('filter-province').addEventListener('change', applyFilters);
+document.getElementById('filter-score').addEventListener('change', applyFilters);
+document.getElementById('filter-flags').addEventListener('change', applyFilters);
 </script>
-
 </body>
 </html>
