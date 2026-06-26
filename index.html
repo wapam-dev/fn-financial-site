@@ -3,215 +3,592 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>First Nations Financial Health — wapam</title>
+    <title>wapam — First Nations Financial Health</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --green: #2c6e49;
+            --green-dark: #1e4d33;
+            --green-light: #e8f5ee;
+            --accent: #52b788;
+            --warn: #e07b00;
+            --danger: #cc2936;
+            --text: #1a1a1a;
+            --muted: #666;
+            --border: #e5e5e5;
+            --bg: #f8f9fa;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: #f5f5f5;
-            color: #222;
+            background: var(--bg);
+            color: var(--text);
         }
-        header {
-            background: #2c6e49;
-            color: white;
-            padding: 20px 30px;
-        }
-        header h1 { font-size: 1.6rem; font-weight: 700; }
-        header p { font-size: 0.9rem; opacity: 0.85; margin-top: 4px; }
-        .container { max-width: 1300px; margin: 0 auto; padding: 20px; }
 
-        /* Filters */
-        .filters {
+        /* NAV */
+        nav {
+            background: var(--green-dark);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .nav-brand {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+        .nav-brand span { color: var(--accent); }
+        .nav-sub {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.55);
+            margin-left: 12px;
+            padding-left: 12px;
+            border-left: 1px solid rgba(255,255,255,0.2);
+        }
+        .nav-links {
+            margin-left: auto;
+            display: flex;
+            gap: 4px;
+        }
+        .nav-links button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            transition: all 0.15s;
+        }
+        .nav-links button:hover,
+        .nav-links button.active {
+            background: rgba(255,255,255,0.12);
+            color: white;
+        }
+
+        /* HERO STATS */
+        .hero-stats {
+            background: var(--green);
+            padding: 20px 24px;
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-num {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.65);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+        .hero-desc {
+            margin-left: auto;
+            max-width: 400px;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.5;
+            text-align: right;
+        }
+
+        /* VIEWS */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* MAP VIEW */
+        #map-container {
+            position: relative;
+        }
+        #map {
+            height: calc(100vh - 130px);
+            width: 100%;
+        }
+        .map-controls {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .map-control-card {
             background: white;
             border-radius: 8px;
-            padding: 16px 20px;
+            padding: 12px 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+        }
+        .map-control-card label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 6px;
+        }
+        .map-control-card select,
+        .map-control-card input {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            background: white;
+        }
+        .map-legend {
+            position: absolute;
+            bottom: 30px;
+            right: 12px;
+            z-index: 500;
+            background: white;
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            font-size: 0.78rem;
+        }
+        .map-legend h4 {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* MAP POPUP */
+        .map-popup h3 {
+            font-size: 0.95rem;
+            color: var(--green-dark);
+            margin-bottom: 6px;
+        }
+        .map-popup .pop-score {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .map-popup .pop-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+        .map-popup .pop-row span:last-child {
+            font-weight: 600;
+            color: var(--text);
+        }
+        .map-popup .pop-btn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 7px;
+            background: var(--green);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .map-popup .pop-btn:hover { background: var(--green-dark); }
+
+        /* TABLE VIEW */
+        #table-view {
+            padding: 20px 24px;
+        }
+        .filters {
+            background: white;
+            border-radius: 10px;
+            padding: 14px 18px;
             margin-bottom: 16px;
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
         }
-        .filters input, .filters select {
+        .filters input,
+        .filters select {
             padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            font-size: 0.88rem;
             background: white;
+            color: var(--text);
         }
         .filters input { width: 220px; }
-        .stat-bar {
+        .filter-count {
             margin-left: auto;
-            font-size: 0.85rem;
-            color: #666;
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 500;
         }
-
-        /* Table */
         .table-wrap {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
             overflow: hidden;
-            margin-bottom: 20px;
         }
         table { width: 100%; border-collapse: collapse; }
         th {
-            background: #2c6e49;
+            background: var(--green);
             color: white;
             padding: 11px 14px;
             text-align: left;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
             user-select: none;
         }
-        th:hover { background: #245c3d; }
-        th.sorted-asc::after { content: " ▲"; }
-        th.sorted-desc::after { content: " ▼"; }
+        th:hover { background: var(--green-dark); }
+        th.sorted-asc::after { content: " ▲"; opacity: 0.7; }
+        th.sorted-desc::after { content: " ▼"; opacity: 0.7; }
         td {
             padding: 10px 14px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 0.88rem;
+            border-bottom: 1px solid #f2f2f2;
+            font-size: 0.87rem;
         }
         tr:last-child td { border-bottom: none; }
-        tr.clickable:hover td { background: #f0f7f4; cursor: pointer; }
-        tr.selected td { background: #e0f0e8; }
-
-        .score { font-weight: 700; font-size: 1rem; }
-        .score-high { color: #2c6e49; }
-        .score-mid { color: #e07b00; }
-        .score-low { color: #cc2936; }
-
+        tr.clickable:hover td {
+            background: var(--green-light);
+            cursor: pointer;
+        }
+        .score-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 28px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .chip-high { background: #d4edda; color: #1a5c33; }
+        .chip-mid { background: #fff3cd; color: #7d5a00; }
+        .chip-low { background: #fde8e9; color: #9c1c24; }
+        .chip-none { background: #f0f0f0; color: #999; }
         .badge {
             display: inline-block;
-            padding: 1px 6px;
+            padding: 2px 7px;
             border-radius: 10px;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 600;
-            margin-left: 4px;
+            margin-right: 3px;
+            white-space: nowrap;
         }
-        .badge-warn { background: #fff0f0; color: #cc2936; border: 1px solid #cc2936; }
-        .badge-ok { background: #f0f7f4; color: #2c6e49; border: 1px solid #2c6e49; }
-
-        /* Detail panel */
-        #detail {
-            display: none;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        #detail h2 { color: #2c6e49; font-size: 1.3rem; margin-bottom: 4px; }
-        #detail .meta { color: #888; font-size: 0.83rem; margin-bottom: 16px; }
-        .close-btn {
-            float: right;
-            background: none;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 4px 10px;
-            cursor: pointer;
-            font-size: 0.82rem;
-            color: #666;
-        }
-        .close-btn:hover { background: #eee; }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 12px;
-            margin: 16px 0;
-        }
-        .card {
-            background: #f9f9f9;
-            border-radius: 6px;
-            padding: 12px;
-            border-left: 4px solid #2c6e49;
-        }
-        .card.warn { border-left-color: #e07b00; }
-        .card.danger { border-left-color: #cc2936; }
-        .card-label {
-            font-size: 0.72rem;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 3px;
-        }
-        .card-value { font-size: 1.2rem; font-weight: 700; }
-
-        .section { 
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #888;
-            margin: 18px 0 8px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 4px;
-        }
-        .warn-box {
-            background: #fff8f0;
-            border: 1px solid #e07b00;
-            border-radius: 6px;
-            padding: 10px 14px;
-            margin-top: 12px;
-            font-size: 0.83rem;
-            color: #555;
-        }
-        .warn-box strong { color: #e07b00; display: block; margin-bottom: 4px; }
-        .notes-box {
-            background: #f0f7f4;
-            border-radius: 6px;
-            padding: 10px 14px;
-            margin-top: 10px;
-            font-size: 0.83rem;
-            color: #444;
-        }
-        .rev-lines {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 2px 16px;
-            font-size: 0.82rem;
-            margin-top: 6px;
-        }
-        .rev-lines span:nth-child(odd) { color: #444; }
-        .rev-lines span:nth-child(even) { text-align: right; font-weight: 600; color: #222; }
-
+        .badge-danger { background: #fde8e9; color: #9c1c24; border: 1px solid #f5c6cb; }
+        .badge-warn { background: #fff3cd; color: #7d5a00; border: 1px solid #ffc107; }
         .pagination {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             padding: 16px;
-            font-size: 0.88rem;
+            border-top: 1px solid var(--border);
         }
         .pagination button {
             padding: 6px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
             cursor: pointer;
             background: white;
+            font-size: 0.85rem;
+            color: var(--text);
         }
-        .pagination button:hover { background: #f0f7f4; }
-        .pagination button.active { background: #2c6e49; color: white; border-color: #2c6e49; }
-        .pagination button:disabled { opacity: 0.4; cursor: default; }
+        .pagination button:hover { background: var(--green-light); }
+        .pagination button.active { background: var(--green); color: white; border-color: var(--green); }
+        .pagination button:disabled { opacity: 0.35; cursor: default; }
+
+        /* DETAIL PANEL */
+        #detail-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 2000;
+            backdrop-filter: blur(2px);
+        }
+        #detail-panel {
+            position: fixed;
+            top: 0;
+            right: -520px;
+            width: 500px;
+            height: 100vh;
+            background: white;
+            z-index: 2001;
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+        }
+        #detail-panel.open { right: 0; }
+        .panel-header {
+            background: var(--green);
+            padding: 20px 24px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .panel-header h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            padding-right: 30px;
+        }
+        .panel-meta {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .panel-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .panel-close:hover { background: rgba(255,255,255,0.25); }
+        .panel-body { padding: 20px 24px; }
+        .panel-score {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--green-light);
+            border-radius: 10px;
+        }
+        .big-score {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .score-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .metric {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+        .metric-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--muted);
+            margin-bottom: 3px;
+        }
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .section-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            margin: 18px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+        .rev-table {
+            width: 100%;
+            font-size: 0.82rem;
+        }
+        .rev-table tr:nth-child(even) td { background: var(--bg); }
+        .rev-table td {
+            padding: 5px 8px;
+            border: none;
+        }
+        .rev-table td:last-child { text-align: right; font-weight: 600; }
+        .flag-box {
+            background: #fff8f0;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            font-size: 0.83rem;
+        }
+        .flag-box .flag-title {
+            font-weight: 700;
+            color: var(--warn);
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .flag-box.danger {
+            background: #fef2f2;
+            border-color: var(--danger);
+        }
+        .flag-box.danger .flag-title { color: var(--danger); }
+        .notes-box {
+            background: var(--green-light);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 0.83rem;
+            color: #2d4a38;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .exp-bar-wrap { margin-bottom: 8px; }
+        .exp-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            margin-bottom: 3px;
+        }
+        .exp-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .exp-bar-fill {
+            height: 100%;
+            background: var(--green);
+            border-radius: 3px;
+        }
 
         footer {
             text-align: center;
             padding: 30px 20px;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             color: #aaa;
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
         }
+        footer a { color: var(--green); text-decoration: none; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>wapam — First Nations Financial Health</h1>
-    <p>Data extracted from publicly available FNFTA disclosures. Click any nation to explore details.</p>
-</header>
+<nav>
+    <div class="nav-brand">wap<span>am</span></div>
+    <div class="nav-sub">First Nations Financial Intelligence</div>
+    <div class="nav-links">
+        <button class="active" onclick="showView('map')" id="btn-map">🗺 Map</button>
+        <button onclick="showView('table')" id="btn-table">📊 Data</button>
+    </div>
+</nav>
 
-<div class="container">
+<div class="hero-stats">
+    <div class="stat">
+        <div class="stat-num" id="stat-nations">—</div>
+        <div class="stat-label">Nations</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num" id="stat-records">—</div>
+        <div class="stat-label">Records</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num">2020–2024</div>
+        <div class="stat-label">Years Covered</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num" id="stat-revenue">—</div>
+        <div class="stat-label">Total Revenue Analyzed</div>
+    </div>
+    <div class="hero-desc">
+        wapam (Cree: "to see") makes publicly disclosed First Nations financial data accessible and meaningful — for communities, researchers, and anyone who wants to understand.
+    </div>
+</div>
+
+<!-- MAP VIEW -->
+<div class="view active" id="map-view">
+    <div id="map-container">
+        <div class="map-controls">
+            <div class="map-control-card">
+                <label>Search Nation</label>
+                <input type="text" id="map-search" placeholder="Type to search...">
+            </div>
+            <div class="map-control-card">
+                <label>Year</label>
+                <select id="map-year">
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                    <option value="2020">2020</option>
+                </select>
+            </div>
+            <div class="map-control-card">
+                <label>Province</label>
+                <select id="map-province">
+                    <option value="">All Provinces</option>
+                    <option value="AB">Alberta</option>
+                    <option value="BC">British Columbia</option>
+                    <option value="MB">Manitoba</option>
+                    <option value="ON">Ontario</option>
+                    <option value="SK">Saskatchewan</option>
+                    <option value="QC">Quebec</option>
+                    <option value="NS">Nova Scotia</option>
+                    <option value="NB">New Brunswick</option>
+                    <option value="PEI">PEI</option>
+                    <option value="NL">Newfoundland</option>
+                    <option value="NT">Northwest Territories</option>
+                    <option value="YT">Yukon</option>
+                    <option value="NU">Nunavut</option>
+                </select>
+            </div>
+        </div>
+        <div class="map-legend">
+            <h4>Health Score</h4>
+            <div class="legend-item"><div class="legend-dot" style="background:#2c6e49"></div>Strong (80+)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e07b00"></div>Moderate (60–79)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#cc2936"></div>Needs Attention (&lt;60)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#aaa"></div>No Score</div>
+        </div>
+        <div id="map"></div>
+    </div>
+</div>
+
+<!-- TABLE VIEW -->
+<div class="view" id="table-view">
     <div class="filters">
         <input type="text" id="search" placeholder="Search nation...">
         <select id="filter-year">
@@ -241,18 +618,16 @@
         <select id="filter-score">
             <option value="">All Scores</option>
             <option value="80">Strong (80+)</option>
-            <option value="60">Moderate (60-79)</option>
-            <option value="0">Needs Attention (0-59)</option>
+            <option value="60">Moderate (60–79)</option>
+            <option value="0">Needs Attention (&lt;60)</option>
         </select>
         <select id="filter-flags">
             <option value="">All Nations</option>
             <option value="going_concern">Going Concern</option>
             <option value="audit_qualified">Qualified Audit</option>
         </select>
-        <div class="stat-bar" id="stat-bar">Loading...</div>
+        <div class="filter-count" id="filter-count"></div>
     </div>
-
-    <div id="detail"></div>
 
     <div class="table-wrap">
         <table>
@@ -273,11 +648,16 @@
         </table>
         <div class="pagination" id="pagination"></div>
     </div>
+    <footer>
+        Data sourced from publicly available FNFTA disclosures · Built for community benefit · <a href="https://github.com/wapam-dev">wapam-dev</a>
+    </footer>
 </div>
 
-<footer>
-    Data sourced from publicly available FNFTA disclosures · Analysis for community benefit · <a href="https://github.com/wapam-dev" style="color:#2c6e49">wapam-dev</a>
-</footer>
+<!-- DETAIL PANEL -->
+<div id="detail-overlay" onclick="closeDetail()"></div>
+<div id="detail-panel">
+    <div id="detail-content"></div>
+</div>
 
 <script>
 let allData = [];
@@ -286,18 +666,122 @@ let sortCol = 'health_score';
 let sortDir = -1;
 let page = 1;
 const PAGE_SIZE = 50;
+let map, markers = [];
 
-const fmt = n => n ? '$' + Math.round(n).toLocaleString() : '—';
+const fmt = n => n ? '$' + Math.abs(Math.round(n)).toLocaleString() : '—';
+const fmtS = n => {
+    if (!n && n !== 0) return '—';
+    return (n < 0 ? '-$' : '$') + Math.abs(Math.round(n)).toLocaleString();
+};
 const pct = n => n ? n.toFixed(1) + '%' : '—';
-const scoreClass = s => s >= 80 ? 'score-high' : s >= 60 ? 'score-mid' : 'score-low';
+const scoreColor = s => s >= 80 ? '#2c6e49' : s >= 60 ? '#e07b00' : s > 0 ? '#cc2936' : '#aaa';
+const scoreChip = s => {
+    if (!s) return `<span class="score-chip chip-none">—</span>`;
+    const cls = s >= 80 ? 'chip-high' : s >= 60 ? 'chip-mid' : 'chip-low';
+    return `<span class="score-chip ${cls}">${s}</span>`;
+};
 
 fetch('data/nations.json')
     .then(r => r.json())
     .then(data => {
         allData = data;
+        
+        // Stats
+        const nations = new Set(data.map(d => d.nation));
+        const totalRev = data.reduce((s, d) => s + (d.revenue || 0), 0);
+        document.getElementById('stat-nations').textContent = nations.size.toLocaleString();
+        document.getElementById('stat-records').textContent = data.length.toLocaleString();
+        document.getElementById('stat-revenue').textContent = '$' + (totalRev / 1e9).toFixed(1) + 'B';
+
         applyFilters();
+        initMap();
     });
 
+// ---- VIEWS ----
+function showView(v) {
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-links button').forEach(el => el.classList.remove('active'));
+    document.getElementById(v + '-view').classList.add('active');
+    document.getElementById('btn-' + v).classList.add('active');
+    if (v === 'map') updateMap();
+}
+
+// ---- MAP ----
+function initMap() {
+    map = L.map('map', {
+        center: [56, -96],
+        zoom: 4,
+        zoomControl: true
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO',
+        maxZoom: 18
+    }).addTo(map);
+
+    updateMap();
+
+    document.getElementById('map-year').addEventListener('change', updateMap);
+    document.getElementById('map-province').addEventListener('change', updateMap);
+    document.getElementById('map-search').addEventListener('input', updateMap);
+}
+
+function updateMap() {
+    if (!map) return;
+    const year = document.getElementById('map-year').value;
+    const province = document.getElementById('map-province').value;
+    const search = document.getElementById('map-search').value.toLowerCase();
+
+    // Clear markers
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    // Get one record per nation for selected year
+    const byNation = {};
+    allData.forEach(d => {
+        if (d.fiscal_year !== year) return;
+        if (!d.lat || !d.lng) return;
+        if (province && d.province !== province) return;
+        if (search && !d.nation.toLowerCase().includes(search)) return;
+        if (!byNation[d.nation] || d.health_score > (byNation[d.nation].health_score || 0)) {
+            byNation[d.nation] = d;
+        }
+    });
+
+    Object.values(byNation).forEach(d => {
+        const color = scoreColor(d.health_score);
+        const marker = L.circleMarker([d.lat, d.lng], {
+            radius: 7,
+            fillColor: color,
+            color: 'white',
+            weight: 1.5,
+            fillOpacity: 0.85
+        });
+
+        const score = d.health_score ? `<div class="pop-score" style="color:${color}">${d.health_score}<small style="font-size:0.5em;color:#888"> / 100</small></div>` : '<div class="pop-score" style="color:#aaa">No Score</div>';
+
+        marker.bindPopup(`
+            <div class="map-popup">
+                <h3>${d.nation}</h3>
+                ${score}
+                <div class="pop-row"><span>Revenue</span><span>${fmt(d.revenue)}</span></div>
+                <div class="pop-row"><span>ISC%</span><span>${pct(d.isc_dependency_pct)}</span></div>
+                <div class="pop-row"><span>OSR%</span><span>${pct(d.osr_pct)}</span></div>
+                <button class="pop-btn" onclick="showDetailByNation('${d.nation.replace(/'/g,"\\'")}', '${year}')">View Full Profile →</button>
+            </div>
+        `, { maxWidth: 220 });
+
+        marker.addTo(map);
+        markers.push(marker);
+    });
+}
+
+function showDetailByNation(name, year) {
+    const d = allData.find(x => x.nation === name && x.fiscal_year === year);
+    if (d) showDetail(d);
+}
+
+// ---- TABLE ----
 function applyFilters() {
     const search = document.getElementById('search').value.toLowerCase();
     const year = document.getElementById('filter-year').value;
@@ -321,7 +805,7 @@ function applyFilters() {
     });
 
     filtered.sort((a, b) => {
-        let av = a[sortCol] || 0, bv = b[sortCol] || 0;
+        let av = a[sortCol] ?? 0, bv = b[sortCol] ?? 0;
         if (typeof av === 'string') return sortDir * av.localeCompare(bv);
         return sortDir * (av - bv);
     });
@@ -331,36 +815,31 @@ function applyFilters() {
 }
 
 function sortBy(col) {
-    if (sortCol === col) sortDir *= -1;
-    else { sortCol = col; sortDir = -1; }
-    document.querySelectorAll('th').forEach(th => {
-        th.classList.remove('sorted-asc', 'sorted-desc');
-    });
+    sortDir = sortCol === col ? sortDir * -1 : -1;
+    sortCol = col;
+    document.querySelectorAll('th').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
     applyFilters();
 }
 
 function render() {
     const start = (page - 1) * PAGE_SIZE;
     const pageData = filtered.slice(start, start + PAGE_SIZE);
+    document.getElementById('filter-count').textContent = `${filtered.length.toLocaleString()} records`;
 
-    document.getElementById('stat-bar').textContent =
-        `${filtered.length.toLocaleString()} records`;
-
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = pageData.map((d, i) => {
+    document.getElementById('tbody').innerHTML = pageData.map((d, i) => {
         const flags = [];
-        if (d.going_concern) flags.push('<span class="badge badge-warn">Going Concern</span>');
+        if (d.going_concern) flags.push('<span class="badge badge-danger">Going Concern</span>');
         if (d.audit_qualified) flags.push('<span class="badge badge-warn">Qualified</span>');
         if (d.one_time_items) flags.push('<span class="badge badge-warn">One-time</span>');
-        return `<tr class="clickable" onclick="showDetail(${start + i})">
-            <td>${d.nation}</td>
+        return `<tr class="clickable" onclick="showDetail(filtered[${start + i}])">
+            <td><strong>${d.nation}</strong></td>
             <td>${d.fiscal_year}</td>
             <td>${d.province || '—'}</td>
-            <td><span class="score ${scoreClass(d.health_score)}">${d.health_score || '—'}</span></td>
+            <td>${scoreChip(d.health_score)}</td>
             <td>${pct(d.isc_dependency_pct)}</td>
             <td>${pct(d.osr_pct)}</td>
             <td>${fmt(d.revenue)}</td>
-            <td>${fmt(d.annual_surplus)}</td>
+            <td>${fmtS(d.annual_surplus)}</td>
             <td>${flags.join('')}</td>
         </tr>`;
     }).join('');
@@ -369,13 +848,15 @@ function render() {
 }
 
 function renderPagination() {
-    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    const total = Math.ceil(filtered.length / PAGE_SIZE);
     const el = document.getElementById('pagination');
-    if (totalPages <= 1) { el.innerHTML = ''; return; }
-
+    if (total <= 1) { el.innerHTML = ''; return; }
     let html = `<button onclick="goPage(${page-1})" ${page===1?'disabled':''}>← Prev</button>`;
-    html += `<span>Page ${page} of ${totalPages}</span>`;
-    html += `<button onclick="goPage(${page+1})" ${page===totalPages?'disabled':''}>Next →</button>`;
+    const start = Math.max(1, page - 2), end = Math.min(total, page + 2);
+    for (let i = start; i <= end; i++) {
+        html += `<button onclick="goPage(${i})" class="${i===page?'active':''}">${i}</button>`;
+    }
+    html += `<button onclick="goPage(${page+1})" ${page===total?'disabled':''}>Next →</button>`;
     el.innerHTML = html;
 }
 
@@ -385,60 +866,123 @@ function goPage(p) {
     window.scrollTo(0, 0);
 }
 
-function showDetail(idx) {
-    const d = filtered[idx];
-    const panel = document.getElementById('detail');
+// ---- DETAIL PANEL ----
+function showDetail(d) {
+    const color = scoreColor(d.health_score);
+    const scoreLabel = !d.health_score ? 'No Score' : d.health_score >= 80 ? 'Strong' : d.health_score >= 60 ? 'Moderate' : 'Needs Attention';
 
-    const warnings = [];
-    if (d.going_concern) warnings.push('Going concern uncertainty noted by auditor');
-    if (d.audit_qualified) warnings.push('Qualified audit opinion issued');
-    if (d.one_time_items) warnings.push(`One-time item: ${d.one_time_description || 'see notes'}`);
-    if (d.isc_dependency_pct > 75) warnings.push(`High ISC dependency (${pct(d.isc_dependency_pct)})`);
+    const flags = [];
+    if (d.going_concern) flags.push({type:'danger', title:'Going Concern', text:'Auditor has noted uncertainty about the nation\'s ability to continue operations.'});
+    if (d.audit_qualified) flags.push({type:'warn', title:'Qualified Audit', text:'The auditor issued a qualified opinion — statements may not fully reflect true position.'});
+    if (d.one_time_items) flags.push({type:'warn', title:'One-time Item', text: d.one_time_description || 'Large non-recurring item present — surplus may not reflect ongoing operations.'});
+    if ((d.isc_dependency_pct || 0) > 75) flags.push({type:'warn', title:'High ISC Dependency', text:`${pct(d.isc_dependency_pct)} of revenue from federal transfers.`});
 
-    const expRows = ['health','education','housing','social','administration','expenses_salaries_total']
-        .map(k => {
-            const val = k === 'expenses_salaries_total' ? d[k] : d['expenses_'+k];
-            if (!val) return '';
-            const label = k === 'expenses_salaries_total' ? 'Salaries & Benefits' : k.charAt(0).toUpperCase() + k.slice(1);
-            return `<span>${label}</span><span>${fmt(val)}</span>`;
-        }).join('');
+    const expPrograms = [
+        ['Health', d.expenses_health],
+        ['Education', d.expenses_education],
+        ['Housing', d.expenses_housing],
+        ['Social', d.expenses_social],
+        ['Administration', d.expenses_administration],
+        ['Enterprises', d.expenses_enterprises],
+    ].filter(([,v]) => v > 0);
 
-    const revLines = Object.entries(d.revenue_lines || {})
-        .map(([k,v]) => `<span>${k}</span><span>${fmt(v)}</span>`)
-        .join('');
+    const totalExp = expPrograms.reduce((s, [,v]) => s + v, 0) || 1;
 
-    panel.style.display = 'block';
-    panel.innerHTML = `
-        <button class="close-btn" onclick="closeDetail()">✕ Close</button>
-        <h2>${d.nation}</h2>
-        <div class="meta">Fiscal Year ${d.fiscal_year} · ${d.province || ''} · Auditor: ${d.auditor || 'Unknown'}</div>
+    const revLines = Object.entries(d.revenue_lines || {}).filter(([,v]) => v !== 0);
 
-        <div class="grid">
-            <div class="card"><div class="card-label">Health Score</div><div class="card-value ${scoreClass(d.health_score)}">${d.health_score || '—'} / 100</div></div>
-            <div class="card"><div class="card-label">Total Revenue</div><div class="card-value">${fmt(d.revenue)}</div></div>
-            <div class="card"><div class="card-label">Annual Surplus</div><div class="card-value">${fmt(d.annual_surplus)}</div></div>
-            <div class="card"><div class="card-label">Accumulated Surplus</div><div class="card-value">${fmt(d.accumulated_surplus)}</div></div>
-            <div class="card"><div class="card-label">ISC Dependency</div><div class="card-value">${pct(d.isc_dependency_pct)}</div></div>
-            <div class="card"><div class="card-label">Own Source Revenue</div><div class="card-value">${pct(d.osr_pct)}</div></div>
-            <div class="card"><div class="card-label">Cash</div><div class="card-value">${fmt(d.cash)}</div></div>
-            <div class="card"><div class="card-label">Long-term Debt</div><div class="card-value">${fmt(d.long_term_debt)}</div></div>
-            <div class="card"><div class="card-label">Capital Assets</div><div class="card-value">${fmt(d.tangible_capital_assets)}</div></div>
-            <div class="card"><div class="card-label">Population (On-Reserve)</div><div class="card-value">${d.population_on_reserve ? d.population_on_reserve.toLocaleString() : '—'}</div></div>
-            <div class="card"><div class="card-label">Total Membership</div><div class="card-value">${d.population_total ? d.population_total.toLocaleString() : '—'}</div></div>
-            <div class="card"><div class="card-label">Employees</div><div class="card-value">${d.num_employees ? d.num_employees.toLocaleString() : '—'}</div></div>
+    document.getElementById('detail-content').innerHTML = `
+        <div class="panel-header">
+            <button class="panel-close" onclick="closeDetail()">✕</button>
+            <h2>${d.nation}</h2>
+            <div class="panel-meta">
+                Fiscal Year ${d.fiscal_year} · ${d.province || 'Unknown Province'} · ${d.auditor || 'Unknown Auditor'}
+            </div>
         </div>
+        <div class="panel-body">
+            <div class="panel-score">
+                <div class="big-score" style="color:${color}">${d.health_score || '—'}</div>
+                <div>
+                    <div style="font-weight:700;font-size:1rem;color:${color}">${scoreLabel}</div>
+                    <div class="score-desc">Financial Health Score out of 100<br>Based on liquidity, debt coverage, surplus trend and more.</div>
+                </div>
+            </div>
 
-        ${expRows ? `<div class="section">Expenses by Program</div><div class="rev-lines">${expRows}</div>` : ''}
-        ${revLines ? `<div class="section">Revenue Lines</div><div class="rev-lines">${revLines}</div>` : ''}
-        ${warnings.length ? `<div class="warn-box"><strong>⚠ Flags</strong>${warnings.map(w=>`<div>${w}</div>`).join('')}</div>` : ''}
-        ${d.notes ? `<div class="notes-box"><strong>Notes:</strong> ${d.notes}</div>` : ''}
-        ${d.economic_notes ? `<div class="notes-box"><strong>Economic:</strong> ${d.economic_notes}</div>` : ''}
+            ${flags.map(f => `
+                <div class="flag-box ${f.type}">
+                    <div class="flag-title">⚠ ${f.title}</div>
+                    ${f.text}
+                </div>
+            `).join('')}
+
+            <div class="section-title">Financial Overview</div>
+            <div class="metrics-grid">
+                <div class="metric"><div class="metric-label">Total Revenue</div><div class="metric-value">${fmt(d.revenue)}</div></div>
+                <div class="metric"><div class="metric-label">Annual Surplus</div><div class="metric-value">${fmtS(d.annual_surplus)}</div></div>
+                <div class="metric"><div class="metric-label">Accumulated Surplus</div><div class="metric-value">${fmt(d.accumulated_surplus)}</div></div>
+                <div class="metric"><div class="metric-label">Cash & Investments</div><div class="metric-value">${fmt((d.cash||0)+(d.temporary_investments||0))}</div></div>
+                <div class="metric"><div class="metric-label">Long-term Debt</div><div class="metric-value">${fmt(d.long_term_debt)}</div></div>
+                <div class="metric"><div class="metric-label">Capital Assets</div><div class="metric-value">${fmt(d.tangible_capital_assets)}</div></div>
+            </div>
+
+            <div class="section-title">Revenue Mix</div>
+            <div class="metrics-grid">
+                <div class="metric"><div class="metric-label">ISC Dependency</div><div class="metric-value" style="color:${(d.isc_dependency_pct||0)>75?'#cc2936':'inherit'}">${pct(d.isc_dependency_pct)}</div></div>
+                <div class="metric"><div class="metric-label">Own Source Revenue</div><div class="metric-value">${pct(d.osr_pct)}</div></div>
+                <div class="metric"><div class="metric-label">ISC Funding</div><div class="metric-value">${fmt(d.isc_funding)}</div></div>
+                <div class="metric"><div class="metric-label">All Govt Transfers</div><div class="metric-value">${fmt(d.total_government_transfers)}</div></div>
+            </div>
+
+            ${d.population_on_reserve || d.population_total || d.num_employees ? `
+            <div class="section-title">Community</div>
+            <div class="metrics-grid">
+                ${d.population_on_reserve ? `<div class="metric"><div class="metric-label">On-Reserve Population</div><div class="metric-value">${d.population_on_reserve.toLocaleString()}</div></div>` : ''}
+                ${d.population_total ? `<div class="metric"><div class="metric-label">Total Membership</div><div class="metric-value">${d.population_total.toLocaleString()}</div></div>` : ''}
+                ${d.num_employees ? `<div class="metric"><div class="metric-label">Employees</div><div class="metric-value">${d.num_employees.toLocaleString()}</div></div>` : ''}
+                ${d.num_subsidiaries ? `<div class="metric"><div class="metric-label">Subsidiaries</div><div class="metric-value">${d.num_subsidiaries}</div></div>` : ''}
+            </div>
+            ` : ''}
+
+            ${expPrograms.length ? `
+            <div class="section-title">Expenses by Program</div>
+            ${expPrograms.map(([label, val]) => `
+                <div class="exp-bar-wrap">
+                    <div class="exp-bar-label">
+                        <span>${label}</span>
+                        <span>${fmt(val)}</span>
+                    </div>
+                    <div class="exp-bar">
+                        <div class="exp-bar-fill" style="width:${Math.min(100, val/totalExp*100).toFixed(1)}%"></div>
+                    </div>
+                </div>
+            `).join('')}
+            ` : ''}
+
+            ${revLines.length ? `
+            <div class="section-title">Revenue Lines</div>
+            <table class="rev-table">
+                ${revLines.map(([k,v]) => `<tr><td>${k}</td><td>${fmtS(v)}</td></tr>`).join('')}
+            </table>
+            ` : ''}
+
+            ${d.notes ? `
+            <div class="section-title">Notes</div>
+            <div class="notes-box">${d.notes}</div>
+            ` : ''}
+
+            ${d.economic_notes ? `
+            <div class="section-title">Economic Activity</div>
+            <div class="notes-box">${d.economic_notes}</div>
+            ` : ''}
+        </div>
     `;
-    panel.scrollIntoView({ behavior: 'smooth' });
+
+    document.getElementById('detail-overlay').style.display = 'block';
+    document.getElementById('detail-panel').classList.add('open');
 }
 
 function closeDetail() {
-    document.getElementById('detail').style.display = 'none';
+    document.getElementById('detail-overlay').style.display = 'none';
+    document.getElementById('detail-panel').classList.remove('open');
 }
 
 document.getElementById('search').addEventListener('input', applyFilters);
