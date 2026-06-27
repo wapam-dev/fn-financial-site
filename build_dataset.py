@@ -58,6 +58,9 @@ def build():
                 "notes": data.get("notes", ""),
                 "economic_notes": data.get("economic_notes", ""),
                 "revenue_lines": data.get("revenue_lines", {}),
+                "lat": data.get("lat"),
+                "lng": data.get("lng"),
+                "band_number": data.get("band_number", ""),
             })
         except Exception as e:
             print(f"  Error reading {filename}: {e}")
